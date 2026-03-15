@@ -20,14 +20,15 @@
 
         /* 2. 耀光（Lens Flare）的基礎設定：純白與發光 */
         .flare {
-            width: 4px;
-            height: 4px;
+            width: 8px;
+            height: 8px;
             background-color: #ffffff;
             border-radius: 50%;
             position: absolute;
             /* 利用 box-shadow 創造中心亮、外圍柔和的光暈 */
-            box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.8),
-                        0 0 20px 5px rgba(255, 255, 255, 0.4);
+            box-shadow: 0 0 15px 4px rgba(255, 255, 255, 0.9),
+                        0 0 30px 10px rgba(255, 255, 255, 0.6);
+                        0 0 50px 15px rgba(255, 255, 255, 0.3);
             /* 套用忽閃忽滅的呼吸動畫 */
             animation: breathe 2s infinite alternate ease-in-out;
             /* 準備未來顏色轉換的平滑過場 */
