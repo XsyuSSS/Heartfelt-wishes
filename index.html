@@ -14,21 +14,21 @@
             color: white;
         }
 
-        /* 魔法師與魔杖光芒 (初始設定為透明隱藏) */
+        /* 魔法師與魔杖光芒 */
         .wizard-container {
             position: absolute;
             bottom: 2vh; left: -5vw;
             width: 55vw; max-width: 250px;
             z-index: 10;
-            opacity: 0; /* 預設隱藏 */
-            transition: opacity 2s ease-in-out; /* 緩慢優雅地出現 */
+            opacity: 0; 
+            transition: opacity 2s ease-in-out; 
         }
         .wizard-img {
             width: 100%; height: auto; display: block;
         }
         .lumos-light {
             position: absolute;
-            top: 18%; right: 6%; /* 魔杖頂端座標 */
+            top: 18%; right: 6%; 
             width: 12px; height: 12px;
             background-color: #ffffff; border-radius: 50%;
             box-shadow: 0 0 15px 5px #fff, 0 0 30px 15px rgba(200,220,255,0.8);
@@ -83,7 +83,6 @@
             background-color: #fff; border-radius: 50%;
             box-shadow: 0 0 10px 2px #fff;
             cursor: pointer;
-            /* 將星星置中於座標點，方便定位 */
             transform: translate(-50%, -50%); 
         }
         .star::before, .star::after {
@@ -110,20 +109,21 @@
             100% { background-color: #FFD700; box-shadow: 0 0 15px #FFD700; } 
         }
 
-        /* 引導點擊的跳動箭頭 */
+        /* ✨ 全新優化的指引手勢 (優雅懸浮) ✨ */
         #guide-arrow {
             position: absolute;
-            color: #FFD700;
-            font-size: 24px;
-            display: none; /* 預設隱藏 */
-            animation: arrowBounce 0.6s infinite alternate;
+            font-size: 32px; /* 稍微放大，方便手機點擊辨識 */
+            display: none; 
+            /* 放慢動畫速度，加上 ease-in-out 讓動作變柔和 */
+            animation: gentleFloat 1.5s infinite alternate ease-in-out;
             z-index: 6;
             transform: translateX(-50%);
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+            /* Emoji 用 filter 加上魔法金光陰影會比較自然 */
+            filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8));
         }
-        @keyframes arrowBounce {
-            0% { margin-top: -30px; }
-            100% { margin-top: -45px; }
+        @keyframes gentleFloat {
+            0% { margin-top: -40px; }
+            100% { margin-top: -55px; }
         }
 
     </style>
@@ -135,10 +135,9 @@
 
     <button id="lumos-btn" class="lumos-btn">路摸思</button>
 
-    <div id="dialogue" class="dialogue-box">
-        </div>
+    <div id="dialogue" class="dialogue-box"></div>
 
-    <div id="guide-arrow">⬇️</div>
+    <div id="guide-arrow">👇</div>
 
     <div id="wizard-box" class="wizard-container">
         <img src="wizard_4x.png" alt="魔法師" class="wizard-img">
@@ -147,8 +146,12 @@
 
     <div id="stars-container"></div>
 
+    <div id="tracing-paper" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-image: url('elephant.jpg'); background-size: contain; background-position: center; background-repeat: no-repeat; opacity: 0.3; z-index: 9997; pointer-events: none;"></div>
+    
+    <div id="coord-dashboard" style="position: fixed; top: 0; left: 0; background: rgba(0,20,0,0.8); color: #00FF00; font-family: monospace; font-size: 14px; padding: 15px; z-index: 9999; pointer-events: none; width: 100vw; box-sizing: border-box; white-space: pre-wrap; word-wrap: break-word; max-height: 40vh; overflow-y: auto;">
+請在畫面上淡淡的小象輪廓點擊星星位置...
+    </div>
     <script>
-        // 取得元素
         const btn = document.getElementById('lumos-btn');
         const wizardBox = document.getElementById('wizard-box');
         const wandLight = document.getElementById('wand-light');
@@ -158,78 +161,93 @@
         const arrow = document.getElementById('guide-arrow');
         const starsContainer = document.getElementById('stars-container');
 
-        // --- 星空座標資料庫 (第一關示範：4顆星星) ---
-        // 你只要在這裡新增座標，程式就會自動接力點亮！
+        // --- 星空座標資料庫 (目前是隨便寫的4顆測試星，等你用工具蓋掉) ---
         const level1Stars = [
-            { top: '40%', left: '40%' }, // 第1顆
-            { top: '35%', left: '50%' }, // 第2顆
-            { top: '38%', left: '60%' }, // 第3顆
-            { top: '45%', left: '65%' }  // 第4顆
+            { top: '40%', left: '40%' }, 
+            { top: '35%', left: '50%' }, 
+            { top: '38%', left: '60%' }, 
+            { top: '45%', left: '65%' }  
         ];
         let currentStarIndex = 0;
 
         // 點擊路摸思按鈕
         btn.addEventListener('click', () => {
-            // 1. 同時播放人聲與音效
             voiceAudio.play().catch(e => console.log("等待 voice.mp3")); 
             sfxAudio.play().catch(e => console.log("等待 Soundeffects.mp3")); 
             
-            // 2. 按鈕消失
             btn.style.opacity = '0';
             setTimeout(() => { btn.style.display = 'none'; }, 500);
 
-            // 3. 魔法師出現與魔杖亮起
             wizardBox.style.opacity = '1';
             setTimeout(() => { wandLight.style.opacity = '1'; }, 1000);
 
-            // 4. 第一階段對話
             setTimeout(() => {
                 dialogue.innerHTML = "開了燈，天上好像有什麼東西？";
                 dialogue.style.opacity = '1';
             }, 1500);
 
-            // 5. 第二階段對話與呼叫第一顆星星
             setTimeout(() => {
                 dialogue.innerHTML = "看來，要把星星點亮才知道這是什麼？";
-                spawnNextStar(); // 啟動星星接力系統
+                spawnNextStar(); 
             }, 4500);
         });
 
-        // --- 接力點亮星星的魔法函數 ---
+        // --- 接力點亮星星 ---
         function spawnNextStar() {
-            // 如果星星點完了
             if (currentStarIndex >= level1Stars.length) {
                 dialogue.innerHTML = "第一部分點亮完成！";
                 arrow.style.display = 'none';
-                return; // 結束第一關
+                return; 
             }
 
-            // 拿出目前要生成的星星資料
             const starData = level1Stars[currentStarIndex];
             
-            // 創造星星元素
             const newStar = document.createElement('div');
             newStar.className = 'star guide-star';
             newStar.style.top = starData.top;
             newStar.style.left = starData.left;
             starsContainer.appendChild(newStar);
 
-            // 讓箭頭移動到新星星的上方
             arrow.style.display = 'block';
             arrow.style.top = starData.top;
             arrow.style.left = starData.left;
 
-            // 幫星星加上點擊事件
             newStar.addEventListener('click', function() {
-                // 自己變成七彩狀態
                 this.classList.remove('guide-star');
                 this.classList.add('stage-cleared');
                 
-                // 準備呼叫下一顆星
                 currentStarIndex++;
                 spawnNextStar();
             });
         }
+
+        // --- 座標擷取器邏輯 (擷取你點擊的 % 數) ---
+        const dashboard = document.getElementById('coord-dashboard');
+        let codeResult = "[\n";
+
+        window.addEventListener('click', (e) => {
+            // 避開按鈕與已生成的星星
+            if(e.target.id === 'lumos-btn' || e.target.classList.contains('star')) return;
+
+            const xPercent = ((e.clientX / window.innerWidth) * 100).toFixed(1);
+            const yPercent = ((e.clientY / window.innerHeight) * 100).toFixed(1);
+
+            codeResult += `    { top: '${yPercent}%', left: '${xPercent}%' },\n`;
+            dashboard.innerText = codeResult + "]";
+
+            const dot = document.createElement('div');
+            dot.style.position = 'absolute';
+            dot.style.top = e.clientY + 'px';
+            dot.style.left = e.clientX + 'px';
+            dot.style.width = '8px';
+            dot.style.height = '8px';
+            dot.style.backgroundColor = 'red';
+            dot.style.borderRadius = '50%';
+            dot.style.transform = 'translate(-50%, -50%)';
+            dot.style.zIndex = '9998';
+            dot.style.pointerEvents = 'none';
+            document.body.appendChild(dot);
+        });
     </script>
 </body>
 </html>
