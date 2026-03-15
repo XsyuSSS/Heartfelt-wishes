@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星光點亮，夢想起飛</title>
+    <style>
+        /* 1. 全暗背景設定 */
+        body {
+            margin: 0;
+            height: 100vh;
+            background-color: #050505; /* 極致深邃黑 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden; /* 防止手機螢幕滑動 */
+            font-family: sans-serif;
+        }
+
+        /* 2. 耀光（Lens Flare）的基礎設定：純白與發光 */
+        .flare {
+            width: 4px;
+            height: 4px;
+            background-color: #ffffff;
+            border-radius: 50%;
+            position: absolute;
+            /* 利用 box-shadow 創造中心亮、外圍柔和的光暈 */
+            box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.8),
+                        0 0 20px 5px rgba(255, 255, 255, 0.4);
+            /* 套用忽閃忽滅的呼吸動畫 */
+            animation: breathe 2s infinite alternate ease-in-out;
+            /* 準備未來顏色轉換的平滑過場 */
+            transition: all 1.5s ease-in-out; 
+        }
+
+        /* 3. 呼吸閃爍動畫設定 */
+        @keyframes breathe {
+            0% { transform: scale(0.8); opacity: 0.4; }
+            100% { transform: scale(1.3); opacity: 1; }
+        }
+
+        /* 4. 第三關通關後的彩色耀光狀態 */
+        .flare.color-heart {
+            background-color: #FFD700; /* 護理師愛心的暖黃色 */
+            box-shadow: 0 0 15px 4px rgba(255, 215, 0, 0.8), 0 0 30px 10px rgba(255, 215, 0, 0.5);
+        }
+        .flare.color-body {
+            background-color: #FFB6C1; /* 柔和粉橘色 */
+            box-shadow: 0 0 15px 4px rgba(255, 182, 193, 0.8), 0 0 30px 10px rgba(255, 182, 193, 0.5);
+        }
+        .flare.color-magic {
+            background-color: #87CEFA; /* 魔法湖水藍 */
+            box-shadow: 0 0 15px 4px rgba(135, 206, 250, 0.8), 0 0 30px 10px rgba(135, 206, 250, 0.5);
+        }
+
+        /* 測試用按鈕排版 */
+        #test-btn {
+            position: absolute;
+            bottom: 50px;
+            padding: 12px 24px;
+            background-color: transparent;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 20px;
+            cursor: pointer;
+            z-index: 10;
+            letter-spacing: 2px;
+            transition: 0.3s;
+        }
+        #test-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="flare" style="top: 35%; left: 40%; animation-delay: 0s;"></div>
+    <div class="flare" style="top: 45%; left: 55%; animation-delay: 0.7s;"></div>
+    <div class="flare" style="top: 55%; left: 45%; animation-delay: 1.4s;"></div>
+
+    <button id="test-btn">模擬通關：點亮彩色小象星光</button>
+
+    <script>
+        const btn = document.getElementById('test-btn');
+        const flares = document.querySelectorAll('.flare');
+
+        btn.addEventListener('click', () => {
+            // 當按鈕點擊，模擬瞬間變色
+            flares[0].classList.add('color-heart');
+            flares[1].classList.add('color-body');
+            flares[2].classList.add('color-magic');
+            
+            btn.textContent = "奇蹟發生了！";
+            btn.style.pointerEvents = "none"; // 點擊後禁用按鈕
+            btn.style.border = "none";
+        });
+    </script>
+</body>
+</html>
