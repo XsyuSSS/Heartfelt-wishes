@@ -2,101 +2,81 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>星光點亮，夢想起飛</title>
     <style>
-        /* 1. 全暗背景設定 */
+        /* 1. 極致深邃黑背景 */
         body {
             margin: 0;
             height: 100vh;
-            background-color: #050505; /* 極致深邃黑 */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            background-color: #030303; /* 比原本更暗一點，為了凸顯光芒 */
             overflow: hidden; /* 防止手機螢幕滑動 */
-            font-family: sans-serif;
+            position: relative;
         }
 
-        /* 2. 耀光（Lens Flare）的基礎設定：純白與發光 */
-        .flare {
-            width: 8px;
-            height: 8px;
+        /* 2. 魔法師的容器定位 (固定在左下角) */
+        .wizard-container {
+            position: absolute;
+            bottom: 2vh;  /* 距離底部一點點 */
+            left: -5vw;   /* 稍微靠左，依照手機比例微調 */
+            width: 55vw;  /* 控制魔法師在手機上的大小 */
+            max-width: 250px;
+            z-index: 10;
+        }
+
+        /* 3. 魔法師圖片設定 */
+        .wizard-img {
+            width: 100%;
+            height: auto;
+            display: block;
+            /* 神級屬性：濾色模式。讓圖片的黑底變透明，完美融入網頁黑底 */
+            mix-blend-mode: screen; 
+            opacity: 0.85; /* 讓魔法師稍微暗一點，凸顯魔杖的光 */
+        }
+
+        /* 4. 哈利波特 Lumos 魔法光球效果 */
+        .lumos-light {
+            position: absolute;
+            /* ⚠️ 關鍵座標：你需要微調這兩個數字，讓光球剛好對準魔杖頂端 */
+            top: 25%;  
+            right: 18%; 
+            
+            width: 12px;
+            height: 12px;
             background-color: #ffffff;
             border-radius: 50%;
-            position: absolute;
-            /* 利用 box-shadow 創造中心亮、外圍柔和的光暈 */
-            box-shadow: 0 0 15px 4px rgba(255, 255, 255, 0.9),
-                        0 0 30px 10px rgba(255, 255, 255, 0.6);
-                        0 0 50px 15px rgba(255, 255, 255, 0.3);
-        
-            /* 套用忽閃忽滅的呼吸動畫 */
-            animation: breathe 2s infinite alternate ease-in-out;
-            /* 準備未來顏色轉換的平滑過場 */
-            transition: all 1.5s ease-in-out; 
+            
+            /* 強烈的多層次發光效果 (白核心 -> 微微偏藍的強烈外暈) */
+            box-shadow: 
+                0 0 15px 5px rgba(255, 255, 255, 1),
+                0 0 30px 15px rgba(200, 220, 255, 0.8),
+                0 0 60px 30px rgba(100, 150, 255, 0.4);
+                
+            /* 忽閃忽滅的呼吸動畫 */
+            animation: lumosPulse 1.5s infinite alternate ease-in-out;
         }
 
-        /* 3. 呼吸閃爍動畫設定 */
-        @keyframes breathe {
-            0% { transform: scale(0.8); opacity: 0.4; }
-            100% { transform: scale(1.3); opacity: 1; }
-        }
-
-        /* 4. 第三關通關後的彩色耀光狀態 */
-        .flare.color-heart {
-            background-color: #FFD700; /* 護理師愛心的暖黃色 */
-            box-shadow: 0 0 15px 4px rgba(255, 215, 0, 0.8), 0 0 30px 10px rgba(255, 215, 0, 0.5);
-        }
-        .flare.color-body {
-            background-color: #FFB6C1; /* 柔和粉橘色 */
-            box-shadow: 0 0 15px 4px rgba(255, 182, 193, 0.8), 0 0 30px 10px rgba(255, 182, 193, 0.5);
-        }
-        .flare.color-magic {
-            background-color: #87CEFA; /* 魔法湖水藍 */
-            box-shadow: 0 0 15px 4px rgba(135, 206, 250, 0.8), 0 0 30px 10px rgba(135, 206, 250, 0.5);
-        }
-
-        /* 測試用按鈕排版 */
-        #test-btn {
-            position: absolute;
-            bottom: 50px;
-            padding: 12px 24px;
-            background-color: transparent;
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            border-radius: 20px;
-            cursor: pointer;
-            z-index: 10;
-            letter-spacing: 2px;
-            transition: 0.3s;
-        }
-        #test-btn:hover {
-            background-color: rgba(255, 255, 255, 0.1);
+        /* Lumos 動畫關鍵影格 */
+        @keyframes lumosPulse {
+            0% { 
+                transform: scale(0.9); 
+                opacity: 0.8; 
+                box-shadow: 0 0 10px 3px rgba(255,255,255,0.8), 0 0 20px 10px rgba(200,220,255,0.6); 
+            }
+            100% { 
+                transform: scale(1.3); 
+                opacity: 1; 
+                box-shadow: 0 0 20px 8px rgba(255,255,255,1), 0 0 40px 20px rgba(200,220,255,0.9), 0 0 80px 40px rgba(100,150,255,0.5); 
+            }
         }
     </style>
 </head>
 <body>
 
-    <div class="flare" style="top: 35%; left: 40%; animation-delay: 0s;"></div>
-    <div class="flare" style="top: 45%; left: 55%; animation-delay: 0.7s;"></div>
-    <div class="flare" style="top: 55%; left: 45%; animation-delay: 1.4s;"></div>
+    <div class="wizard-container">
+        <img src="wizard_4x.png" alt="魔法師" class="wizard-img">
+        <div class="lumos-light"></div>
+    </div>
 
-    <button id="test-btn">模擬通關：點亮彩色小象星光</button>
-
-    <script>
-        const btn = document.getElementById('test-btn');
-        const flares = document.querySelectorAll('.flare');
-
-        btn.addEventListener('click', () => {
-            // 當按鈕點擊，模擬瞬間變色
-            flares[0].classList.add('color-heart');
-            flares[1].classList.add('color-body');
-            flares[2].classList.add('color-magic');
-            
-            btn.textContent = "奇蹟發生了！";
-            btn.style.pointerEvents = "none"; // 點擊後禁用按鈕
-            btn.style.border = "none";
-        });
-    </script>
 </body>
 </html>
