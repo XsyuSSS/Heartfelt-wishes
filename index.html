@@ -7,11 +7,13 @@
     <style>
         body { margin: 0; height: 100vh; background-color: #030303; overflow: hidden; font-family: sans-serif; color: white; }
 
+        /* 遊戲畫布：鎖死手機比例 (9:16) */
         #game-area {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 100vw; max-width: 450px; aspect-ratio: 9 / 16; max-height: 100vh; position: relative;
         }
 
+        /* 閃光層 */
         .flash-effect {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background-color: white; z-index: 9999; opacity: 0; pointer-events: none;
@@ -19,6 +21,7 @@
         .flash-active { animation: flashBang 2s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; }
         @keyframes flashBang { 0% { opacity: 1; } 10% { opacity: 1; } 100% { opacity: 0; } }
 
+        /* 魔法師與魔杖 */
         .wizard-container { position: absolute; bottom: 5vh; left: 0; width: 50vw; max-width: 200px; z-index: 10; opacity: 0; transition: opacity 2s ease-in-out; pointer-events: none; }
         .wizard-img { width: 100%; height: auto; display: block; }
         .lumos-light {
@@ -29,6 +32,7 @@
         }
         @keyframes lumosPulse { 0% { transform: scale(0.9); box-shadow: 0 0 10px 3px rgba(255,255,255,0.8); } 100% { transform: scale(1.3); box-shadow: 0 0 20px 8px #fff, 0 0 40px 20px rgba(200,220,255,0.9); } }
 
+        /* 路摸思按鈕 */
         .lumos-btn {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             padding: 15px 40px; font-size: 24px; letter-spacing: 4px;
@@ -37,6 +41,7 @@
             animation: btnFloat 2s infinite alternate; transition: all 0.5s; z-index: 20;
         }
 
+        /* 對話框 */
         .dialogue-box {
             position: absolute; bottom: 20%; left: 50%; transform: translateX(-50%);
             width: 80%; padding: 15px 20px;
@@ -45,6 +50,7 @@
             opacity: 0; transition: opacity 1s ease-in; z-index: 15; pointer-events: none;
         }
 
+        /* 十字星星 */
         .star {
             position: absolute; width: 6px; height: 6px; background-color: #fff; border-radius: 50%;
             box-shadow: 0 0 10px 2px #fff; cursor: pointer; transform: translate(-50%, -50%); z-index: 50; 
@@ -61,6 +67,7 @@
         .stage-cleared { animation: rainbowFlash 3s infinite alternate; pointer-events: none; }
         @keyframes rainbowFlash { 0% { background-color: #FFB6C1; box-shadow: 0 0 15px #FFB6C1; } 50% { background-color: #87CEFA; box-shadow: 0 0 15px #87CEFA; } 100% { background-color: #FFD700; box-shadow: 0 0 15px #FFD700; } }
 
+        /* 指引手勢 */
         #guide-arrow {
             position: absolute; font-size: 32px; display: none; 
             animation: gentleFloat 1.5s infinite alternate ease-in-out; z-index: 60; transform: translateX(-50%);
@@ -68,19 +75,13 @@
         }
         @keyframes gentleFloat { 0% { margin-top: -40px; } 100% { margin-top: -55px; } }
 
+        /* ✨ 質感優化版：最終浮現的線條象 (純白星軌 + 高級暖金光暈) */
         #final-elephant {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background-image: url('elephant_line.png'); background-size: 100% 100%;
             background-position: center; background-repeat: no-repeat;
-            opacity: 0; transition: opacity 3s ease-in; z-index: 2; pointer-events: none;
-            filter: invert(100%) sepia(100%) saturate(1000%) hue-rotate(340deg) brightness(2.5) drop-shadow(0 0 15px #FFD700);
-        }
-
-        #tracing-paper {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-image: url('elephant_line.png'); background-size: 100% 100%;
-            background-position: center; background-repeat: no-repeat;
-            opacity: 0.3; z-index: 9997; pointer-events: none;
+            opacity: 0; transition: opacity 4s ease-in-out; z-index: 2; pointer-events: none;
+            filter: invert(100%) drop-shadow(0 0 8px #FFD700) drop-shadow(0 0 15px #FFD700);
         }
     </style>
 </head>
@@ -103,20 +104,7 @@
 
         <div id="stars-container"></div>
         <div id="final-elephant"></div>
-        
-        <div id="tracing-paper"></div>
-        
-        <div id="click-counter" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.8); color: lime; padding: 10px 15px; border-radius: 20px; z-index: 9999; font-family: monospace; font-size: 14px; pointer-events: none; border: 1px solid lime;">
-            📍 已點擊: 0 / 22
-        </div>
-
-        <div id="copy-modal" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #222; padding: 20px; border-radius: 10px; z-index: 10000; width: 85%; text-align: center; box-shadow: 0 0 30px rgba(0,0,0,0.9); border: 2px solid lime;">
-            <h3 style="color: lime; margin-top: 0;">🎉 22 顆座標收集完成！</h3>
-            <textarea id="code-output" style="width: 90%; height: 120px; font-family: monospace; font-size: 12px; margin-bottom: 15px; background: #000; color: #fff; padding: 10px; border: 1px solid #555;" readonly></textarea>
-            <button id="copy-btn" style="padding: 12px; background: lime; color: black; border: none; font-weight: bold; border-radius: 5px; cursor: pointer; width: 100%; font-size: 16px;">📋 點我一鍵複製代碼</button>
-            <button id="reset-btn" style="padding: 12px; background: #555; color: white; border: none; font-weight: bold; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 10px; font-size: 16px;">🔄 點錯了，清空重來</button>
-        </div>
-        </div>
+    </div>
 
     <script>
         const btn = document.getElementById('lumos-btn');
@@ -130,17 +118,27 @@
         const arrow = document.getElementById('guide-arrow');
         const starsContainer = document.getElementById('stars-container');
         const finalElephant = document.getElementById('final-elephant');
-        const gameArea = document.getElementById('game-area');
 
-        bgmAudio.volume = 0.1; // 音量已調小
+        // 🔥 調降 BGM 音量為 0.08
+        bgmAudio.volume = 0.08;
 
-        // ⚠️ 等一下用你複製的座標替換這裡！
+        // 🌟 匯入你辛苦測量出來的完美座標
         const stages = [
-            [ { top: '50.0%', left: '50.0%' } ], 
-            [ { top: '40.0%', left: '40.0%' } ], 
-            [ { top: '20.0%', left: '20.0%' } ]  
+            // 第一關 (6顆)
+            [
+                { top: '50.3%', left: '42.7%' }, { top: '67.5%', left: '32.5%' }, { top: '55.1%', left: '48.0%' }, { top: '60.6%', left: '40.0%' }, { top: '63.2%', left: '46.9%' }, { top: '59.3%', left: '56.0%' }
+            ],
+            // 第二關 (9顆)
+            [
+                { top: '34.1%', left: '49.1%' }, { top: '40.1%', left: '59.5%' }, { top: '46.8%', left: '53.9%' }, { top: '48.3%', left: '74.9%' }, { top: '52.1%', left: '69.1%' }, { top: '62.1%', left: '60.3%' }, { top: '63.9%', left: '44.8%' }, { top: '69.2%', left: '46.1%' }, { top: '68.1%', left: '70.7%' }
+            ],
+            // 第三關 (7顆)
+            [
+                { top: '29.7%', left: '26.7%' }, { top: '36.2%', left: '25.6%' }, { top: '42.0%', left: '28.5%' }, { top: '46.4%', left: '28.8%' }, { top: '40.8%', left: '36.0%' }, { top: '47.1%', left: '37.9%' }, { top: '43.2%', left: '42.9%' }
+            ]
         ];
 
+        // 手碟音效配置
         const handpanNotes = [
             ['1.mp3', '2.mp3', '3.mp3', '1.mp3', '4.mp3', '2.mp3'], 
             ['3.mp3', '5.mp3', '4.mp3', '6.mp3', '5.mp3', '7.mp3', '6.mp3', '8.mp3', '7.mp3'], 
@@ -168,6 +166,7 @@
             }
         }
 
+        // 大結局音樂：手碟自動演奏 + 0.08 音量的 BGM 襯底
         function playFinalMelody() {
             bgmAudio.play().catch(e=>{});
             const autoMelody = [
@@ -186,10 +185,12 @@
 
         function spawnNextStar() {
             let currentStageStars = stages[currentStageIndex];
+
             if (currentStarIndex >= currentStageStars.length) {
                 currentStageIndex++;
                 currentStarIndex = 0;
                 arrow.style.display = 'none';
+
                 if (currentStageIndex === 1) {
                     dialogue.style.opacity = '0';
                     setTimeout(() => { dialogue.innerHTML = "那邊也有星星需要點亮。"; dialogue.style.opacity = '1'; spawnNextStar(); }, 1500);
@@ -207,6 +208,7 @@
                 }
                 return; 
             }
+
             const starData = currentStageStars[currentStarIndex];
             const newStar = document.createElement('div');
             newStar.className = 'star guide-star';
@@ -230,73 +232,6 @@
                 currentStarIndex++; totalStarsClicked++; spawnNextStar();
             });
         }
-
-        // --- 全新進化版：一鍵複製開發工具 ---
-        const clickCounter = document.getElementById('click-counter');
-        const copyModal = document.getElementById('copy-modal');
-        const codeOutput = document.getElementById('code-output');
-        const copyBtn = document.getElementById('copy-btn');
-        const resetBtn = document.getElementById('reset-btn');
-        let allPoints = [];
-        let redDots = []; // 用來紀錄畫在畫面上的紅點，方便重置時刪除
-
-        gameArea.addEventListener('click', (e) => {
-            // 防呆：避開按鈕、星星，且點滿 22 顆就不再紀錄
-            if(e.target.id === 'lumos-btn' || e.target.classList.contains('star') || e.target.closest('#copy-modal')) return;
-            if(allPoints.length >= 22) return; 
-
-            const rect = gameArea.getBoundingClientRect();
-            let x = e.clientX - rect.left; let y = e.clientY - rect.top;
-            if (x < 0 || x > rect.width || y < 0 || y > rect.height) return;
-            
-            const xPercent = ((x / rect.width) * 100).toFixed(1);
-            const yPercent = ((y / rect.height) * 100).toFixed(1);
-
-            allPoints.push(`{ top: '${yPercent}%', left: '${xPercent}%' }`);
-            
-            // 畫紅點
-            const dot = document.createElement('div');
-            dot.style.position = 'absolute'; dot.style.top = yPercent + '%'; dot.style.left = xPercent + '%';
-            dot.style.width = '8px'; dot.style.height = '8px'; dot.style.backgroundColor = 'red';
-            dot.style.borderRadius = '50%'; dot.style.transform = 'translate(-50%, -50%)';
-            dot.style.zIndex = '9998'; dot.style.pointerEvents = 'none';
-            gameArea.appendChild(dot);
-            redDots.push(dot); // 存進陣列
-
-            // 更新右上角計數
-            clickCounter.innerText = `📍 已點擊: ${allPoints.length} / 22`;
-
-            // 當點滿 22 顆，自動彈出複製視窗
-            if (allPoints.length === 22) {
-                let outputCode = "const stages = [\n";
-                outputCode += "    // 第一關 (6顆)\n    [\n        " + allPoints.slice(0, 6).join(", ") + "\n    ],\n";
-                outputCode += "    // 第二關 (9顆)\n    [\n        " + allPoints.slice(6, 15).join(", ") + "\n    ],\n";
-                outputCode += "    // 第三關 (7顆)\n    [\n        " + allPoints.slice(15, 22).join(", ") + "\n    ]\n";
-                outputCode += "];";
-
-                codeOutput.value = outputCode;
-                copyModal.style.display = 'block';
-            }
-        });
-
-        // 一鍵複製按鈕邏輯
-        copyBtn.addEventListener('click', () => {
-            codeOutput.select();
-            document.execCommand('copy');
-            copyBtn.innerText = "✅ 複製成功！請傳到電腦貼上";
-            copyBtn.style.background = "yellow";
-        });
-
-        // 重新測量按鈕邏輯
-        resetBtn.addEventListener('click', () => {
-            allPoints = [];
-            redDots.forEach(dot => dot.remove()); // 刪除畫面上所有紅點
-            redDots = [];
-            clickCounter.innerText = `📍 已點擊: 0 / 22`;
-            copyModal.style.display = 'none';
-            copyBtn.innerText = "📋 點我一鍵複製代碼";
-            copyBtn.style.background = "lime";
-        });
     </script>
 </body>
 </html>
