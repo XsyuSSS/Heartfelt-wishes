@@ -52,7 +52,6 @@
             opacity: 0; transition: opacity 0.8s ease-in-out; z-index: 15; pointer-events: none;
         }
 
-        /* ✨ 英文統一變為金色設定 */
         .en-text { font-size: 14px; color: #FFD700; display: block; margin-top: 5px; opacity: 0.9; }
 
         .star {
@@ -78,7 +77,6 @@
         }
         @keyframes gentleFloat { 0% { margin-top: -40px; } 100% { margin-top: -55px; } }
 
-        /* ✨ 終極完美小象濾鏡：先變純黑再反轉純白，完全消滅紅色邊緣，只留下乾淨的金光 */
         #final-elephant {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background-image: url('elephant_line.png'); background-size: 100% 100%;
@@ -167,7 +165,9 @@
         const gv6 = document.getElementById('gv6');
         const gv7 = document.getElementById('gv7');
 
-        // 正確的座標
+        // 🔥 強制將所有人聲設置為 100% 最大音量
+        [gv1, gv2, gv3, gv4, gv5, gv6, gv7].forEach(v => v.volume = 1.0);
+
         const stages = [
             [ { top: '50.3%', left: '42.7%' }, { top: '67.5%', left: '32.5%' }, { top: '55.1%', left: '48.0%' }, { top: '60.6%', left: '40.0%' }, { top: '63.2%', left: '46.9%' }, { top: '59.3%', left: '56.0%' } ],
             [ { top: '34.1%', left: '49.1%' }, { top: '40.1%', left: '59.5%' }, { top: '46.8%', left: '53.9%' }, { top: '48.3%', left: '74.9%' }, { top: '52.1%', left: '69.1%' }, { top: '62.1%', left: '60.3%' }, { top: '63.9%', left: '44.8%' }, { top: '69.2%', left: '46.1%' }, { top: '68.1%', left: '70.7%' } ],
@@ -185,21 +185,8 @@
         let totalStarsClicked = 0;
 
         btn.addEventListener('click', () => {
-            // ✨ 手機版解鎖器：用無聲的方式讓瀏覽器授權後續所有音檔自動播放
-            const allAudios = [bgmAudio, gv1, gv2, gv3, gv4, gv5, gv6, gv7];
-            allAudios.forEach(audio => {
-                audio.muted = true;
-                audio.play().then(() => {
-                    audio.pause();
-                    audio.currentTime = 0;
-                    audio.muted = false;
-                }).catch(() => {});
-            });
-
-            // 立即播放前奏音效
             voiceAudio.play().catch(e => {}); 
             sfxAudio.play().catch(e => {}); 
-            
             btn.style.display = 'none';
             flash.classList.add('flash-active');
             
@@ -224,7 +211,6 @@
             }
         }
 
-        // 10秒手碟獨奏 + BGM 緩入 (最高音量 0.08)
         function playFinalMelody() {
             const autoMelody = [
                 { note: 'D.mp3', delay: 0 }, { note: '3.mp3', delay: 1200 },
@@ -235,10 +221,7 @@
             ];
             
             autoMelody.forEach(item => {
-                setTimeout(() => {
-                    let audio = new Audio(item.note);
-                    audio.play().catch(e=>{});
-                }, item.delay);
+                setTimeout(() => { let audio = new Audio(item.note); audio.play().catch(e=>{}); }, item.delay);
             });
 
             setTimeout(() => {
@@ -246,48 +229,49 @@
                 bgmAudio.play().catch(e=>{});
                 let vol = 0;
                 let fadeInterval = setInterval(() => {
-                    if(vol < 0.08) { // 音量精準鎖定在 0.08
+                    if(vol < 0.04) { // 平常 BGM 音量為 0.04
                         vol += 0.005;
-                        bgmAudio.volume = Math.min(vol, 0.08);
-                    } else {
-                        clearInterval(fadeInterval);
-                    }
+                        bgmAudio.volume = Math.min(vol, 0.04);
+                    } else { clearInterval(fadeInterval); }
                 }, 250);
             }, 10500);
         }
 
-        // 劇情推進
         function startWishSequence() {
+            // 🔥 動態降音 (Audio Ducking)：講話時把 BGM 瞬間壓低到 0.01
+            bgmAudio.volume = 0.01;
             dialogue.style.opacity = '0'; 
             
             setTimeout(() => {
                 dialogue.innerHTML = "沒想到你居然找到小象神<span class='en-text'>(I can't believe you actually found the Little Elephant Spirit!)</span>";
                 dialogue.style.opacity = '1';
-                gv1.play().catch(e=>{});
+                gv1.currentTime = 0; gv1.play().catch(e=>{});
                 
                 setTimeout(() => {
                     dialogue.style.opacity = '0';
                     setTimeout(() => {
                         dialogue.innerHTML = "這樣吧<span class='en-text'>(Tell you what,)</span>";
                         dialogue.style.opacity = '1';
-                        gv2.play().catch(e=>{});
+                        gv2.currentTime = 0; gv2.play().catch(e=>{});
 
                         setTimeout(() => {
                             dialogue.style.opacity = '0';
                             setTimeout(() => {
                                 dialogue.innerHTML = "我給你的一個許願的機會<span class='en-text'>(I will grant you a chance to make a wish.)</span>";
                                 dialogue.style.opacity = '1';
-                                gv3.play().catch(e=>{});
+                                gv3.currentTime = 0; gv3.play().catch(e=>{});
 
                                 setTimeout(() => {
                                     dialogue.style.opacity = '0';
                                     setTimeout(() => {
                                         dialogue.innerHTML = "你想要許願什麼呢？<span class='en-text'>(What would you like to wish for?)</span>";
                                         dialogue.style.opacity = '1';
-                                        gv4.play().catch(e=>{});
+                                        gv4.currentTime = 0; gv4.play().catch(e=>{});
                                         
                                         setTimeout(() => {
                                             wishContainer.style.display = 'block';
+                                            // 講完話，BGM 恢復一點點音量陪伴許願
+                                            bgmAudio.volume = 0.03; 
                                         }, 2500);
                                     }, 600);
                                 }, 3500);
@@ -298,15 +282,21 @@
             }, 1000);
         }
 
-        // 許願按鈕
         document.getElementById('wish-submit').addEventListener('click', () => {
             const inputVal = document.getElementById('wish-input').value;
             if(!inputVal.trim()) return; 
+
+            // 🔥 手機瀏覽器防禦解鎖：在玩家點擊按鈕的這一瞬間，確保後三句音檔取得播放權限
+            [gv5, gv6, gv7].forEach(v => {
+                v.muted = true;
+                v.play().then(() => { v.pause(); v.currentTime = 0; v.muted = false; }).catch(()=>{});
+            });
 
             wishContainer.style.display = 'none';
             dialogue.style.opacity = '0';
 
             setTimeout(() => {
+                bgmAudio.volume = 0.01; // 再次降音凸顯人聲
                 dialogue.innerHTML = "小象神收到你的許願了！<span class='en-text'>(The Little Elephant Spirit has received your wish!)</span>";
                 dialogue.style.opacity = '1';
                 gv5.play().catch(e=>{});
@@ -324,6 +314,9 @@
                                 dialogue.innerHTML = "希望一切順利<span class='en-text'>(I hope everything goes smoothly.)</span>";
                                 dialogue.style.opacity = '1';
                                 gv7.play().catch(e=>{});
+                                
+                                // 最後一句講完，BGM 溫柔收尾
+                                setTimeout(() => { bgmAudio.volume = 0.04; }, 3000);
                             }, 600);
                         }, 3500);
                     }, 600);
@@ -355,9 +348,7 @@
                         finalElephant.style.opacity = '1'; 
                         wizardBox.style.opacity = '0'; 
                         
-                        setTimeout(() => {
-                            startWishSequence();
-                        }, 12500);
+                        setTimeout(() => { startWishSequence(); }, 12500);
 
                     }, 1500);
                 }
@@ -384,6 +375,15 @@
                 playHandpanNote(stageToPlay, starToPlay); 
                 this.classList.remove('guide-star');
                 this.classList.add('stage-cleared');
+                
+                // 🔥 手機瀏覽器防禦解鎖：在點擊最後一顆星星的瞬間，偷渡解鎖前四句小象神語音
+                if (totalStarsClicked === 21) {
+                    [gv1, gv2, gv3, gv4].forEach(v => {
+                        v.muted = true;
+                        v.play().then(() => { v.pause(); v.currentTime = 0; v.muted = false; }).catch(()=>{});
+                    });
+                }
+                
                 currentStarIndex++; totalStarsClicked++; spawnNextStar();
             });
         }
