@@ -112,7 +112,6 @@
 
     <audio id="voice-audio" src="voice.mp3" preload="auto"></audio>
     <audio id="sfx-audio" src="Soundeffects.mp3" preload="auto"></audio>
-    <audio id="bgm-audio" src="bgm.mp3" loop preload="auto"></audio>
 
     <audio id="gv1" src="godvoice_01.mp3" preload="auto"></audio>
     <audio id="gv2" src="godvoice_02.mp3" preload="auto"></audio>
@@ -150,7 +149,6 @@
         const dialogue = document.getElementById('dialogue');
         const voiceAudio = document.getElementById('voice-audio');
         const sfxAudio = document.getElementById('sfx-audio');
-        const bgmAudio = document.getElementById('bgm-audio');
         const arrow = document.getElementById('guide-arrow');
         const starsContainer = document.getElementById('stars-container');
         const finalElephant = document.getElementById('final-elephant');
@@ -185,8 +183,20 @@
         let totalStarsClicked = 0;
 
         btn.addEventListener('click', () => {
+            // 手機版解鎖器：只專注於解鎖語音檔
+            const allAudios = [gv1, gv2, gv3, gv4, gv5, gv6, gv7];
+            allAudios.forEach(audio => {
+                audio.muted = true;
+                audio.play().then(() => {
+                    audio.pause();
+                    audio.currentTime = 0;
+                    audio.muted = false;
+                }).catch(() => {});
+            });
+
             voiceAudio.play().catch(e => {}); 
             sfxAudio.play().catch(e => {}); 
+            
             btn.style.display = 'none';
             flash.classList.add('flash-active');
             
@@ -211,6 +221,7 @@
             }
         }
 
+        // 純淨的 10 秒手碟獨奏 (不再呼叫 BGM)
         function playFinalMelody() {
             const autoMelody = [
                 { note: 'D.mp3', delay: 0 }, { note: '3.mp3', delay: 1200 },
@@ -223,23 +234,9 @@
             autoMelody.forEach(item => {
                 setTimeout(() => { let audio = new Audio(item.note); audio.play().catch(e=>{}); }, item.delay);
             });
-
-            setTimeout(() => {
-                bgmAudio.volume = 0;
-                bgmAudio.play().catch(e=>{});
-                let vol = 0;
-                let fadeInterval = setInterval(() => {
-                    if(vol < 0.04) { // 平常 BGM 音量為 0.04
-                        vol += 0.005;
-                        bgmAudio.volume = Math.min(vol, 0.04);
-                    } else { clearInterval(fadeInterval); }
-                }, 250);
-            }, 10500);
         }
 
         function startWishSequence() {
-            // 🔥 動態降音 (Audio Ducking)：講話時把 BGM 瞬間壓低到 0.01
-            bgmAudio.volume = 0.01;
             dialogue.style.opacity = '0'; 
             
             setTimeout(() => {
@@ -270,8 +267,6 @@
                                         
                                         setTimeout(() => {
                                             wishContainer.style.display = 'block';
-                                            // 講完話，BGM 恢復一點點音量陪伴許願
-                                            bgmAudio.volume = 0.03; 
                                         }, 2500);
                                     }, 600);
                                 }, 3500);
@@ -286,7 +281,7 @@
             const inputVal = document.getElementById('wish-input').value;
             if(!inputVal.trim()) return; 
 
-            // 🔥 手機瀏覽器防禦解鎖：在玩家點擊按鈕的這一瞬間，確保後三句音檔取得播放權限
+            // 在送出願望的瞬間，二次確保後面三句音檔已解鎖
             [gv5, gv6, gv7].forEach(v => {
                 v.muted = true;
                 v.play().then(() => { v.pause(); v.currentTime = 0; v.muted = false; }).catch(()=>{});
@@ -296,7 +291,6 @@
             dialogue.style.opacity = '0';
 
             setTimeout(() => {
-                bgmAudio.volume = 0.01; // 再次降音凸顯人聲
                 dialogue.innerHTML = "小象神收到你的許願了！<span class='en-text'>(The Little Elephant Spirit has received your wish!)</span>";
                 dialogue.style.opacity = '1';
                 gv5.play().catch(e=>{});
@@ -314,9 +308,6 @@
                                 dialogue.innerHTML = "希望一切順利<span class='en-text'>(I hope everything goes smoothly.)</span>";
                                 dialogue.style.opacity = '1';
                                 gv7.play().catch(e=>{});
-                                
-                                // 最後一句講完，BGM 溫柔收尾
-                                setTimeout(() => { bgmAudio.volume = 0.04; }, 3000);
                             }, 600);
                         }, 3500);
                     }, 600);
@@ -348,6 +339,7 @@
                         finalElephant.style.opacity = '1'; 
                         wizardBox.style.opacity = '0'; 
                         
+                        // 等待手碟獨奏結束後，開始說話
                         setTimeout(() => { startWishSequence(); }, 12500);
 
                     }, 1500);
@@ -376,7 +368,7 @@
                 this.classList.remove('guide-star');
                 this.classList.add('stage-cleared');
                 
-                // 🔥 手機瀏覽器防禦解鎖：在點擊最後一顆星星的瞬間，偷渡解鎖前四句小象神語音
+                // 保險機制：點擊最後一顆星星時偷渡解鎖前四句語音
                 if (totalStarsClicked === 21) {
                     [gv1, gv2, gv3, gv4].forEach(v => {
                         v.muted = true;
