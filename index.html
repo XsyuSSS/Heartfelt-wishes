@@ -7,12 +7,9 @@
     <style>
         body { margin: 0; height: 100vh; background-color: #030303; overflow: hidden; font-family: sans-serif; color: white; }
 
-        /* 🔥 終極防跑版遊戲畫布：永遠鎖死手機比例 (9:16) */
         #game-area {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 100vw; max-width: 450px; 
-            aspect-ratio: 9 / 16; /* 核心魔法：維持直立比例 */
-            max-height: 100vh; position: relative;
+            width: 100vw; max-width: 450px; aspect-ratio: 9 / 16; max-height: 100vh; position: relative;
         }
 
         .flash-effect {
@@ -71,16 +68,15 @@
         }
         @keyframes gentleFloat { 0% { margin-top: -40px; } 100% { margin-top: -55px; } }
 
-        /* 最終去背小象，加上純金色濾鏡 */
+        /* 🔥 強化版最終去背小象：強制亮度飆升，確保金光閃閃 */
         #final-elephant {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background-image: url('elephant_line.png'); background-size: 100% 100%;
             background-position: center; background-repeat: no-repeat;
-            opacity: 0; transition: opacity 4s ease-in; z-index: 2; pointer-events: none;
-            filter: invert(80%) sepia(80%) saturate(800%) hue-rotate(350deg) brightness(1.5) drop-shadow(0 0 15px rgba(255, 215, 0, 0.8));
+            opacity: 0; transition: opacity 3s ease-in; z-index: 2; pointer-events: none;
+            filter: invert(100%) sepia(100%) saturate(1000%) hue-rotate(340deg) brightness(2.5) drop-shadow(0 0 15px #FFD700);
         }
 
-        /* 描圖紙 */
         #tracing-paper {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background-image: url('elephant_line.png'); background-size: 100% 100%;
@@ -110,10 +106,8 @@
         <div id="final-elephant"></div>
         
         <div id="tracing-paper"></div>
-        <div id="coord-dashboard" style="position: fixed; top: 0; left: 0; background: rgba(0,0,0,0.85); color: #00FF00; font-family: monospace; padding: 10px; z-index: 9999; pointer-events: auto; width: 100vw; font-size: 12px; max-height: 40vh; overflow-y: auto; white-space: pre;">
-請依序點擊小象輪廓，共 22 點...
-(第 1~6 點為第一關，第 7~15 點為第二關，第 16~22 點為第三關)
-        </div>
+        <div id="coord-dashboard" style="position: fixed; top: 0; left: 0; background: rgba(0,0,0,0.85); color: #00FF00; font-family: monospace; padding: 10px; z-index: 9999; pointer-events: none; width: 100vw; font-size: 12px; max-height: 40vh; overflow-y: auto; white-space: pre;">請依序點擊小象輪廓，共 22 點...
+(第 1~6 點為第一關，第 7~15 點為第二關，第 16~22 點為第三關)</div>
         </div>
 
     <script>
@@ -130,18 +124,20 @@
         const finalElephant = document.getElementById('final-elephant');
         const gameArea = document.getElementById('game-area');
 
-        // ⚠️ 這裡的內容，等一下用上面儀表板產出的程式碼蓋掉！
+        // 🔥 調降 BGM 音量到 30%
+        bgmAudio.volume = 0.3;
+
+        // ⚠️ 等一下用你產出的座標替換這裡！
         const stages = [
-            [ { top: '50.0%', left: '50.0%' } ], // 第一關佔位符
-            [ { top: '40.0%', left: '40.0%' } ], // 第二關佔位符
-            [ { top: '20.0%', left: '20.0%' } ]  // 第三關佔位符
+            [ { top: '50.0%', left: '50.0%' } ], 
+            [ { top: '40.0%', left: '40.0%' } ], 
+            [ { top: '20.0%', left: '20.0%' } ]  
         ];
 
-        // 手碟音效 (確保每一關的音檔數量與星星數量一致)
         const handpanNotes = [
-            ['1.mp3', '2.mp3', '3.mp3', '1.mp3', '4.mp3', '2.mp3'], // 共 6 顆
-            ['3.mp3', '5.mp3', '4.mp3', '6.mp3', '5.mp3', '7.mp3', '6.mp3', '8.mp3', '7.mp3'], // 共 9 顆
-            ['7.mp3', '9.mp3', '8.mp3', '9.mp3', '6.mp3', '8.mp3', 'D.mp3'] // 共 7 顆
+            ['1.mp3', '2.mp3', '3.mp3', '1.mp3', '4.mp3', '2.mp3'], 
+            ['3.mp3', '5.mp3', '4.mp3', '6.mp3', '5.mp3', '7.mp3', '6.mp3', '8.mp3', '7.mp3'], 
+            ['7.mp3', '9.mp3', '8.mp3', '9.mp3', '6.mp3', '8.mp3', 'D.mp3'] 
         ];
 
         let currentStageIndex = 0;
@@ -178,7 +174,6 @@
             }
         }
 
-        // 大結局音樂
         function playFinalMelody() {
             bgmAudio.play().catch(e=>{});
             const autoMelody = [
@@ -215,7 +210,7 @@
                         dialogue.innerHTML = "什麼？這個圖案是......？"; 
                         dialogue.style.opacity = '1';
                         playFinalMelody();
-                        finalElephant.style.opacity = '0.8';
+                        finalElephant.style.opacity = '1'; // 讓大象完全亮起
                     }, 1500);
                 }
                 return; 
@@ -254,7 +249,8 @@
         const dashboard = document.getElementById('coord-dashboard');
         let allPoints = [];
         
-        window.addEventListener('click', (e) => {
+        // 點擊事件只綁定在 gameArea 上，避免干擾
+        gameArea.addEventListener('click', (e) => {
             if(e.target.id === 'lumos-btn' || e.target.classList.contains('star') || e.target.id === 'coord-dashboard') return;
             const rect = gameArea.getBoundingClientRect();
             let x = e.clientX - rect.left; let y = e.clientY - rect.top;
@@ -265,7 +261,6 @@
 
             allPoints.push(`{ top: '${yPercent}%', left: '${xPercent}%' }`);
             
-            // 畫紅點
             const dot = document.createElement('div');
             dot.style.position = 'absolute'; dot.style.top = yPercent + '%'; dot.style.left = xPercent + '%';
             dot.style.width = '8px'; dot.style.height = '8px'; dot.style.backgroundColor = 'red';
@@ -273,7 +268,6 @@
             dot.style.zIndex = '9998'; dot.style.pointerEvents = 'none';
             gameArea.appendChild(dot);
 
-            // 自動組合出完美的 stages 陣列
             let outputCode = "const stages = [\n";
             outputCode += "    // 第一關 (6顆)\n    [\n        " + allPoints.slice(0, 6).join(", ") + "\n    ],\n";
             if (allPoints.length > 6) {
