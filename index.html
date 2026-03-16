@@ -7,21 +7,22 @@
     <style>
         body { margin: 0; height: 100vh; background-color: #030303; overflow: hidden; font-family: sans-serif; color: white; }
 
-        /* 閃光層 */
-        .flash-effect {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background-color: white; z-index: 9999;
-            opacity: 0; pointer-events: none;
-        }
-        .flash-active { animation: flashBang 2s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; }
-        @keyframes flashBang {
-            0% { opacity: 1; }
-            10% { opacity: 1; }
-            100% { opacity: 0; }
+        /* 🔥 終極防跑版遊戲畫布：永遠鎖死手機比例 (9:16) */
+        #game-area {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 100vw; max-width: 450px; 
+            aspect-ratio: 9 / 16; /* 核心魔法：維持直立比例 */
+            max-height: 100vh; position: relative;
         }
 
-        /* 魔法師與魔杖 */
-        .wizard-container { position: absolute; bottom: 2vh; left: -5vw; width: 55vw; max-width: 250px; z-index: 10; opacity: 0; transition: opacity 2s ease-in-out; pointer-events: none; }
+        .flash-effect {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: white; z-index: 9999; opacity: 0; pointer-events: none;
+        }
+        .flash-active { animation: flashBang 2s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; }
+        @keyframes flashBang { 0% { opacity: 1; } 10% { opacity: 1; } 100% { opacity: 0; } }
+
+        .wizard-container { position: absolute; bottom: 5vh; left: 0; width: 50vw; max-width: 200px; z-index: 10; opacity: 0; transition: opacity 2s ease-in-out; pointer-events: none; }
         .wizard-img { width: 100%; height: auto; display: block; }
         .lumos-light {
             position: absolute; top: 18%; right: 6%; width: 12px; height: 12px;
@@ -29,12 +30,8 @@
             box-shadow: 0 0 15px 5px #fff, 0 0 30px 15px rgba(200,220,255,0.8);
             animation: lumosPulse 1.5s infinite alternate ease-in-out; opacity: 0; transition: opacity 1s ease-in;
         }
-        @keyframes lumosPulse {
-            0% { transform: scale(0.9); box-shadow: 0 0 10px 3px rgba(255,255,255,0.8); }
-            100% { transform: scale(1.3); box-shadow: 0 0 20px 8px #fff, 0 0 40px 20px rgba(200,220,255,0.9); }
-        }
+        @keyframes lumosPulse { 0% { transform: scale(0.9); box-shadow: 0 0 10px 3px rgba(255,255,255,0.8); } 100% { transform: scale(1.3); box-shadow: 0 0 20px 8px #fff, 0 0 40px 20px rgba(200,220,255,0.9); } }
 
-        /* 路摸思按鈕 */
         .lumos-btn {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             padding: 15px 40px; font-size: 24px; letter-spacing: 4px;
@@ -43,21 +40,17 @@
             animation: btnFloat 2s infinite alternate; transition: all 0.5s; z-index: 20;
         }
 
-        /* 對話框 (加上 pointer-events: none 讓點擊可以穿透！) */
         .dialogue-box {
-            position: absolute; bottom: 25%; left: 50%; transform: translateX(-50%);
-            width: 80%; max-width: 400px; padding: 15px 20px;
+            position: absolute; bottom: 20%; left: 50%; transform: translateX(-50%);
+            width: 80%; padding: 15px 20px;
             background: rgba(25, 25, 40, 0.85); border: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: 10px; font-size: 18px; line-height: 1.5; text-align: center;
-            opacity: 0; transition: opacity 1s ease-in; z-index: 15; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            pointer-events: none; /* 🔥 關鍵修正：解決隱形盾牌擋住星星的問題 */
+            opacity: 0; transition: opacity 1s ease-in; z-index: 15; pointer-events: none;
         }
 
-        /* 十字星星 (拉高 z-index 確保永遠在最上層) */
         .star {
             position: absolute; width: 6px; height: 6px; background-color: #fff; border-radius: 50%;
-            box-shadow: 0 0 10px 2px #fff; cursor: pointer; transform: translate(-50%, -50%); 
-            z-index: 50; /* 🔥 關鍵修正：確保星星永遠在可點擊的最上層 */
+            box-shadow: 0 0 10px 2px #fff; cursor: pointer; transform: translate(-50%, -50%); z-index: 50; 
         }
         .star::before, .star::after {
             content: ''; position: absolute; background: rgba(255, 255, 255, 0.8);
@@ -69,27 +62,30 @@
         @keyframes guidePulse { 0% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 1; transform: translate(-50%, -50%) scale(1.5); box-shadow: 0 0 20px 5px #fff; } }
         
         .stage-cleared { animation: rainbowFlash 3s infinite alternate; pointer-events: none; }
-        @keyframes rainbowFlash {
-            0% { background-color: #FFB6C1; box-shadow: 0 0 15px #FFB6C1; } 
-            50% { background-color: #87CEFA; box-shadow: 0 0 15px #87CEFA; } 
-            100% { background-color: #FFD700; box-shadow: 0 0 15px #FFD700; } 
-        }
+        @keyframes rainbowFlash { 0% { background-color: #FFB6C1; box-shadow: 0 0 15px #FFB6C1; } 50% { background-color: #87CEFA; box-shadow: 0 0 15px #87CEFA; } 100% { background-color: #FFD700; box-shadow: 0 0 15px #FFD700; } }
 
-        /* 指引手勢 (加上 pointer-events: none 讓點擊可以穿透！) */
         #guide-arrow {
             position: absolute; font-size: 32px; display: none; 
             animation: gentleFloat 1.5s infinite alternate ease-in-out; z-index: 60; transform: translateX(-50%);
-            filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8));
-            pointer-events: none; /* 🔥 關鍵修正：手勢本身不能擋住星星 */
+            filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8)); pointer-events: none;
         }
         @keyframes gentleFloat { 0% { margin-top: -40px; } 100% { margin-top: -55px; } }
 
-        /* 最終浮現圖 */
+        /* 最終去背小象，加上純金色濾鏡 */
         #final-elephant {
-            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
-            background-image: url('elephant.jpg'); background-size: contain; background-position: center; background-repeat: no-repeat;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('elephant_line.png'); background-size: 100% 100%;
+            background-position: center; background-repeat: no-repeat;
             opacity: 0; transition: opacity 4s ease-in; z-index: 2; pointer-events: none;
-            filter: invert(80%) sepia(50%) saturate(1000%) hue-rotate(1deg) brightness(1.2) drop-shadow(0 0 10px #FFD700);
+            filter: invert(80%) sepia(80%) saturate(800%) hue-rotate(350deg) brightness(1.5) drop-shadow(0 0 15px rgba(255, 215, 0, 0.8));
+        }
+
+        /* 描圖紙 */
+        #tracing-paper {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('elephant_line.png'); background-size: 100% 100%;
+            background-position: center; background-repeat: no-repeat;
+            opacity: 0.3; z-index: 9997; pointer-events: none;
         }
     </style>
 </head>
@@ -100,17 +96,25 @@
     <audio id="sfx-audio" src="Soundeffects.mp3"></audio>
     <audio id="bgm-audio" src="bgm.mp3" loop></audio>
 
-    <button id="lumos-btn" class="lumos-btn">路摸思</button>
-    <div id="dialogue" class="dialogue-box"></div>
-    <div id="guide-arrow">👇</div>
+    <div id="game-area">
+        <button id="lumos-btn" class="lumos-btn">路摸思</button>
+        <div id="dialogue" class="dialogue-box"></div>
+        <div id="guide-arrow">👇</div>
 
-    <div id="wizard-box" class="wizard-container">
-        <img src="wizard_4x.png" alt="魔法師" class="wizard-img">
-        <div id="wand-light" class="lumos-light"></div>
-    </div>
+        <div id="wizard-box" class="wizard-container">
+            <img src="wizard_4x.png" alt="魔法師" class="wizard-img">
+            <div id="wand-light" class="lumos-light"></div>
+        </div>
 
-    <div id="stars-container"></div>
-    <div id="final-elephant"></div>
+        <div id="stars-container"></div>
+        <div id="final-elephant"></div>
+        
+        <div id="tracing-paper"></div>
+        <div id="coord-dashboard" style="position: fixed; top: 0; left: 0; background: rgba(0,0,0,0.85); color: #00FF00; font-family: monospace; padding: 10px; z-index: 9999; pointer-events: auto; width: 100vw; font-size: 12px; max-height: 40vh; overflow-y: auto; white-space: pre;">
+請依序點擊小象輪廓，共 22 點...
+(第 1~6 點為第一關，第 7~15 點為第二關，第 16~22 點為第三關)
+        </div>
+        </div>
 
     <script>
         const btn = document.getElementById('lumos-btn');
@@ -124,37 +128,25 @@
         const arrow = document.getElementById('guide-arrow');
         const starsContainer = document.getElementById('stars-container');
         const finalElephant = document.getElementById('final-elephant');
+        const gameArea = document.getElementById('game-area');
 
+        // ⚠️ 這裡的內容，等一下用上面儀表板產出的程式碼蓋掉！
         const stages = [
-            [
-                { top: '50.3%', left: '48.0%' }, { top: '67.2%', left: '45.1%' },
-                { top: '54.9%', left: '49.4%' }, { top: '60.4%', left: '47.1%' },
-                { top: '62.9%', left: '48.6%' }, { top: '58.9%', left: '51.8%' }
-            ],
-            [
-                { top: '39.8%', left: '52.7%' }, { top: '46.4%', left: '51.3%' },
-                { top: '47.8%', left: '56.8%' }, { top: '34.4%', left: '49.7%' },
-                { top: '52.0%', left: '55.1%' }, { top: '67.6%', left: '55.8%' },
-                { top: '69.1%', left: '49.1%' }, { top: '64.0%', left: '48.5%' },
-                { top: '62.3%', left: '52.8%' }
-            ],
-            [
-                { top: '30.0%', left: '43.5%' }, { top: '36.1%', left: '43.3%' },
-                { top: '42.2%', left: '43.9%' }, { top: '41.3%', left: '45.7%' },
-                { top: '46.2%', left: '43.9%' }, { top: '46.7%', left: '46.7%' },
-                { top: '43.3%', left: '48.0%' }
-            ]
+            [ { top: '50.0%', left: '50.0%' } ], // 第一關佔位符
+            [ { top: '40.0%', left: '40.0%' } ], // 第二關佔位符
+            [ { top: '20.0%', left: '20.0%' } ]  // 第三關佔位符
         ];
 
+        // 手碟音效 (確保每一關的音檔數量與星星數量一致)
         const handpanNotes = [
-            ['1.mp3', '2.mp3', '3.mp3', '1.mp3', '4.mp3', '2.mp3'],
-            ['3.mp3', '5.mp3', '4.mp3', '6.mp3', '5.mp3', '7.mp3', '6.mp3', '8.mp3', '7.mp3'],
-            ['7.mp3', '9.mp3', '8.mp3', '9.mp3', '6.mp3', '8.mp3', ['D.mp3', '9.mp3']]
+            ['1.mp3', '2.mp3', '3.mp3', '1.mp3', '4.mp3', '2.mp3'], // 共 6 顆
+            ['3.mp3', '5.mp3', '4.mp3', '6.mp3', '5.mp3', '7.mp3', '6.mp3', '8.mp3', '7.mp3'], // 共 9 顆
+            ['7.mp3', '9.mp3', '8.mp3', '9.mp3', '6.mp3', '8.mp3', 'D.mp3'] // 共 7 顆
         ];
 
         let currentStageIndex = 0;
         let currentStarIndex = 0;
-        let totalStarsClicked = 0; // 新增：紀錄玩家總共點了幾顆星星
+        let totalStarsClicked = 0;
 
         btn.addEventListener('click', () => {
             voiceAudio.play().catch(e => {}); 
@@ -180,16 +172,27 @@
         });
 
         function playHandpanNote(stageIdx, starIdx) {
-            const noteData = handpanNotes[stageIdx][starIdx];
-            if (Array.isArray(noteData)) {
-                noteData.forEach(file => {
-                    let audio = new Audio(file);
-                    audio.play().catch(e => {});
-                });
-            } else {
-                let audio = new Audio(noteData);
+            if(handpanNotes[stageIdx] && handpanNotes[stageIdx][starIdx]){
+                let audio = new Audio(handpanNotes[stageIdx][starIdx]);
                 audio.play().catch(e => {});
             }
+        }
+
+        // 大結局音樂
+        function playFinalMelody() {
+            bgmAudio.play().catch(e=>{});
+            const autoMelody = [
+                { note: 'D.mp3', delay: 0 }, { note: '3.mp3', delay: 600 },
+                { note: '5.mp3', delay: 1200 }, { note: '7.mp3', delay: 1800 },
+                { note: '9.mp3', delay: 2400 }, { note: '8.mp3', delay: 3200 },
+                { note: '6.mp3', delay: 4000 }, { note: 'D.mp3', delay: 5000 }, { note: '9.mp3', delay: 5000 }
+            ];
+            autoMelody.forEach(item => {
+                setTimeout(() => {
+                    let audio = new Audio(item.note);
+                    audio.play().catch(e=>{});
+                }, item.delay);
+            });
         }
 
         function spawnNextStar() {
@@ -211,7 +214,7 @@
                     setTimeout(() => { 
                         dialogue.innerHTML = "什麼？這個圖案是......？"; 
                         dialogue.style.opacity = '1';
-                        bgmAudio.play().catch(e=>{});
+                        playFinalMelody();
                         finalElephant.style.opacity = '0.8';
                     }, 1500);
                 }
@@ -225,7 +228,6 @@
             newStar.style.left = starData.left;
             starsContainer.appendChild(newStar);
 
-            // 🔥 新增邏輯：只在總點擊數小於 3（也就是前 3 顆星星）時顯示手指引導
             if (totalStarsClicked < 3) {
                 arrow.style.display = 'block';
                 arrow.style.top = starData.top;
@@ -243,10 +245,47 @@
                 this.classList.add('stage-cleared');
                 
                 currentStarIndex++;
-                totalStarsClicked++; // 增加總點擊數
+                totalStarsClicked++;
                 spawnNextStar();
             });
         }
+
+        // --- 全自動分關開發工具 ---
+        const dashboard = document.getElementById('coord-dashboard');
+        let allPoints = [];
+        
+        window.addEventListener('click', (e) => {
+            if(e.target.id === 'lumos-btn' || e.target.classList.contains('star') || e.target.id === 'coord-dashboard') return;
+            const rect = gameArea.getBoundingClientRect();
+            let x = e.clientX - rect.left; let y = e.clientY - rect.top;
+            if (x < 0 || x > rect.width || y < 0 || y > rect.height) return;
+            
+            const xPercent = ((x / rect.width) * 100).toFixed(1);
+            const yPercent = ((y / rect.height) * 100).toFixed(1);
+
+            allPoints.push(`{ top: '${yPercent}%', left: '${xPercent}%' }`);
+            
+            // 畫紅點
+            const dot = document.createElement('div');
+            dot.style.position = 'absolute'; dot.style.top = yPercent + '%'; dot.style.left = xPercent + '%';
+            dot.style.width = '8px'; dot.style.height = '8px'; dot.style.backgroundColor = 'red';
+            dot.style.borderRadius = '50%'; dot.style.transform = 'translate(-50%, -50%)';
+            dot.style.zIndex = '9998'; dot.style.pointerEvents = 'none';
+            gameArea.appendChild(dot);
+
+            // 自動組合出完美的 stages 陣列
+            let outputCode = "const stages = [\n";
+            outputCode += "    // 第一關 (6顆)\n    [\n        " + allPoints.slice(0, 6).join(", ") + "\n    ],\n";
+            if (allPoints.length > 6) {
+                outputCode += "    // 第二關 (9顆)\n    [\n        " + allPoints.slice(6, 15).join(", ") + "\n    ],\n";
+            }
+            if (allPoints.length > 15) {
+                outputCode += "    // 第三關 (7顆)\n    [\n        " + allPoints.slice(15, 22).join(", ") + "\n    ]\n";
+            }
+            outputCode += "];";
+
+            dashboard.innerText = `目前已點擊: ${allPoints.length}/22 顆\n\n` + outputCode;
+        });
     </script>
 </body>
 </html>
