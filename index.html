@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Heartfelt wishes</title>
+    
+    <meta name="description" content="烏鴉鴉的一片黑">
+    <meta property="og:title" content="Heartfelt wishes">
+    <meta property="og:description" content="烏鴉鴉的一片黑">
+    <meta property="og:type" content="website">
     <style>
         body { margin: 0; height: 100vh; background-color: #030303; overflow: hidden; font-family: sans-serif; color: white; }
 
@@ -168,7 +173,6 @@
         let totalStarsClicked = 0;
 
         btn.addEventListener('click', () => {
-            // 背景音樂授權解鎖 (靜音播放再暫停)
             bgmAudio.muted = true;
             bgmAudio.play().then(() => {
                 bgmAudio.pause();
@@ -203,7 +207,6 @@
             }
         }
 
-        // 10秒手碟獨奏 + BGM 優雅緩入
         function playFinalMelody() {
             const autoMelody = [
                 { note: 'D.mp3', delay: 0 }, { note: '3.mp3', delay: 1200 },
@@ -217,7 +220,6 @@
                 setTimeout(() => { let audio = new Audio(item.note); audio.play().catch(e=>{}); }, item.delay);
             });
 
-            // 第 10.5 秒開始，BGM 緩慢淡入至 0.08
             setTimeout(() => {
                 bgmAudio.volume = 0;
                 bgmAudio.play().catch(e=>{});
@@ -233,7 +235,6 @@
             }, 10500);
         }
 
-        // 階梯式字幕劇情
         async function startWishSequence() {
             dialogue.style.opacity = '0'; 
             await wait(1000);
@@ -311,7 +312,6 @@
                         finalElephant.style.opacity = '1'; 
                         wizardBox.style.opacity = '0'; 
                         
-                        // 11.5秒後，等 BGM 稍微穩定了再開始對話
                         setTimeout(() => { startWishSequence(); }, 11500);
 
                     }, 1500);
