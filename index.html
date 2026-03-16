@@ -7,13 +7,11 @@
     <style>
         body { margin: 0; height: 100vh; background-color: #030303; overflow: hidden; font-family: sans-serif; color: white; }
 
-        /* 遊戲畫布：鎖死手機比例 (9:16) */
         #game-area {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 100vw; max-width: 450px; aspect-ratio: 9 / 16; max-height: 100vh; position: relative;
         }
 
-        /* 閃光層 */
         .flash-effect {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background-color: white; z-index: 9999; opacity: 0; pointer-events: none;
@@ -21,9 +19,9 @@
         .flash-active { animation: flashBang 2s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; }
         @keyframes flashBang { 0% { opacity: 1; } 10% { opacity: 1; } 100% { opacity: 0; } }
 
-        /* 魔法師與魔杖 */
         .wizard-container { position: absolute; bottom: 5vh; left: 0; width: 50vw; max-width: 200px; z-index: 10; opacity: 0; transition: opacity 2s ease-in-out; pointer-events: none; }
         .wizard-img { width: 100%; height: auto; display: block; }
+        
         .lumos-light {
             position: absolute; top: 18%; right: 6%; width: 12px; height: 12px;
             background-color: #ffffff; border-radius: 50%;
@@ -32,7 +30,12 @@
         }
         @keyframes lumosPulse { 0% { transform: scale(0.9); box-shadow: 0 0 10px 3px rgba(255,255,255,0.8); } 100% { transform: scale(1.3); box-shadow: 0 0 20px 8px #fff, 0 0 40px 20px rgba(200,220,255,0.9); } }
 
-        /* 路摸思按鈕 */
+        #magic-projectile {
+            position: absolute; width: 10px; height: 10px; background: white; border-radius: 50%;
+            box-shadow: 0 0 15px 5px #fff, 0 0 30px 10px #FFD700; z-index: 60; opacity: 0;
+            bottom: 25%; left: 30%; transition: all 1s ease-in-out; pointer-events: none;
+        }
+
         .lumos-btn {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             padding: 15px 40px; font-size: 24px; letter-spacing: 4px;
@@ -41,16 +44,18 @@
             animation: btnFloat 2s infinite alternate; transition: all 0.5s; z-index: 20;
         }
 
-        /* 對話框 */
         .dialogue-box {
-            position: absolute; bottom: 20%; left: 50%; transform: translateX(-50%);
-            width: 80%; padding: 15px 20px;
+            position: absolute; bottom: 18%; left: 50%; transform: translateX(-50%);
+            width: 85%; padding: 15px 20px; box-sizing: border-box;
             background: rgba(25, 25, 40, 0.85); border: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: 10px; font-size: 18px; line-height: 1.5; text-align: center;
-            opacity: 0; transition: opacity 1s ease-in; z-index: 15; pointer-events: none;
+            opacity: 0; transition: opacity 0.8s ease-in-out; z-index: 15; pointer-events: none;
         }
 
-        /* 十字星星 */
+        /* 中英雙語排版 */
+        .en-text { font-size: 14px; color: #aaaaaa; display: block; margin-top: 5px; }
+        .en-text.gold { color: #FFD700; opacity: 0.9; }
+
         .star {
             position: absolute; width: 6px; height: 6px; background-color: #fff; border-radius: 50%;
             box-shadow: 0 0 10px 2px #fff; cursor: pointer; transform: translate(-50%, -50%); z-index: 50; 
@@ -67,7 +72,6 @@
         .stage-cleared { animation: rainbowFlash 3s infinite alternate; pointer-events: none; }
         @keyframes rainbowFlash { 0% { background-color: #FFB6C1; box-shadow: 0 0 15px #FFB6C1; } 50% { background-color: #87CEFA; box-shadow: 0 0 15px #87CEFA; } 100% { background-color: #FFD700; box-shadow: 0 0 15px #FFD700; } }
 
-        /* 指引手勢 */
         #guide-arrow {
             position: absolute; font-size: 32px; display: none; 
             animation: gentleFloat 1.5s infinite alternate ease-in-out; z-index: 60; transform: translateX(-50%);
@@ -75,14 +79,34 @@
         }
         @keyframes gentleFloat { 0% { margin-top: -40px; } 100% { margin-top: -55px; } }
 
-        /* ✨ 質感優化版：最終浮現的線條象 (純白星軌 + 高級暖金光暈) */
         #final-elephant {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background-image: url('elephant_line.png'); background-size: 100% 100%;
             background-position: center; background-repeat: no-repeat;
-            opacity: 0; transition: opacity 4s ease-in-out; z-index: 2; pointer-events: none;
+            opacity: 0; transition: opacity 3s ease-in-out; z-index: 2; pointer-events: none;
             filter: invert(100%) drop-shadow(0 0 8px #FFD700) drop-shadow(0 0 15px #FFD700);
         }
+
+        #wish-container {
+            display: none; position: absolute; bottom: 35%; left: 50%; transform: translateX(-50%);
+            width: 80%; z-index: 100; text-align: center; animation: fadeIn 1s ease-in;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translate(-50%, 10px); } to { opacity: 1; transform: translate(-50%, 0); } }
+        
+        #wish-input {
+            width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.5);
+            background: rgba(0, 0, 0, 0.6); color: white; font-size: 16px; box-sizing: border-box;
+            margin-bottom: 15px; text-align: center;
+        }
+        #wish-input:focus { outline: none; border-color: #FFD700; box-shadow: 0 0 10px rgba(255,215,0,0.5); }
+        
+        #wish-submit {
+            padding: 10px 30px; background: #FFD700; color: #333; border: none; border-radius: 25px;
+            font-weight: bold; font-size: 16px; cursor: pointer; box-shadow: 0 0 15px rgba(255,215,0,0.4);
+            transition: all 0.3s;
+        }
+        #wish-submit:hover { background: #fff; transform: scale(1.05); }
+
     </style>
 </head>
 <body>
@@ -92,10 +116,19 @@
     <audio id="sfx-audio" src="Soundeffects.mp3"></audio>
     <audio id="bgm-audio" src="bgm.mp3" loop></audio>
 
+    <audio id="gv1" src="godvoice_01.mp3"></audio>
+    <audio id="gv2" src="godvoice_02.mp3"></audio>
+    <audio id="gv3" src="godvoice_03.mp3"></audio>
+    <audio id="gv4" src="godvoice_04.mp3"></audio>
+    <audio id="gv5" src="godvoice_05.mp3"></audio>
+    <audio id="gv6" src="godvoice_06.mp3"></audio>
+    <audio id="gv7" src="godvoice_07.mp3"></audio>
+
     <div id="game-area">
         <button id="lumos-btn" class="lumos-btn">路摸思</button>
         <div id="dialogue" class="dialogue-box"></div>
         <div id="guide-arrow">👇</div>
+        <div id="magic-projectile"></div>
 
         <div id="wizard-box" class="wizard-container">
             <img src="wizard_4x.png" alt="魔法師" class="wizard-img">
@@ -104,6 +137,11 @@
 
         <div id="stars-container"></div>
         <div id="final-elephant"></div>
+        
+        <div id="wish-container">
+            <input type="text" id="wish-input" placeholder="寫下你的心願...">
+            <button id="wish-submit">送出心願</button>
+        </div>
     </div>
 
     <script>
@@ -118,27 +156,24 @@
         const arrow = document.getElementById('guide-arrow');
         const starsContainer = document.getElementById('stars-container');
         const finalElephant = document.getElementById('final-elephant');
+        const projectile = document.getElementById('magic-projectile');
+        const wishContainer = document.getElementById('wish-container');
 
-        // 🔥 調降 BGM 音量為 0.08
-        bgmAudio.volume = 0.08;
+        // 讀取配音檔
+        const gv1 = document.getElementById('gv1');
+        const gv2 = document.getElementById('gv2');
+        const gv3 = document.getElementById('gv3');
+        const gv4 = document.getElementById('gv4');
+        const gv5 = document.getElementById('gv5');
+        const gv6 = document.getElementById('gv6');
+        const gv7 = document.getElementById('gv7');
 
-        // 🌟 匯入你辛苦測量出來的完美座標
         const stages = [
-            // 第一關 (6顆)
-            [
-                { top: '50.3%', left: '42.7%' }, { top: '67.5%', left: '32.5%' }, { top: '55.1%', left: '48.0%' }, { top: '60.6%', left: '40.0%' }, { top: '63.2%', left: '46.9%' }, { top: '59.3%', left: '56.0%' }
-            ],
-            // 第二關 (9顆)
-            [
-                { top: '34.1%', left: '49.1%' }, { top: '40.1%', left: '59.5%' }, { top: '46.8%', left: '53.9%' }, { top: '48.3%', left: '74.9%' }, { top: '52.1%', left: '69.1%' }, { top: '62.1%', left: '60.3%' }, { top: '63.9%', left: '44.8%' }, { top: '69.2%', left: '46.1%' }, { top: '68.1%', left: '70.7%' }
-            ],
-            // 第三關 (7顆)
-            [
-                { top: '29.7%', left: '26.7%' }, { top: '36.2%', left: '25.6%' }, { top: '42.0%', left: '28.5%' }, { top: '46.4%', left: '28.8%' }, { top: '40.8%', left: '36.0%' }, { top: '47.1%', left: '37.9%' }, { top: '43.2%', left: '42.9%' }
-            ]
+            [ { top: '50.3%', left: '42.7%' }, { top: '67.5%', left: '32.5%' }, { top: '55.1%', left: '48.0%' }, { top: '60.6%', left: '40.0%' }, { top: '63.2%', left: '46.9%' }, { top: '59.3%', left: '56.0%' } ],
+            [ { top: '34.1%', left: '49.1%' }, { top: '40.1%', left: '59.5%' }, { top: '46.8%', left: '53.9%' }, { top: '48.3%', left: '74.9%' }, { top: '52.1%', left: '69.1%' }, { top: '62.1%', left: '60.3%' }, { top: '63.9%', left: '44.8%' }, { top: '69.2%', left: '46.1%' }, { top: '68.1%', left: '70.7%' } ],
+            [ { top: '29.7%', left: '26.7%' }, { top: '36.2%', left: '25.6%' }, { top: '42.0%', left: '28.5%' }, { top: '46.4%', left: '28.8%' }, { top: '40.8%', left: '36.0%' }, { top: '47.1%', left: '37.9%' }, { top: '43.2%', left: '42.9%' } ]
         ];
 
-        // 手碟音效配置
         const handpanNotes = [
             ['1.mp3', '2.mp3', '3.mp3', '1.mp3', '4.mp3', '2.mp3'], 
             ['3.mp3', '5.mp3', '4.mp3', '6.mp3', '5.mp3', '7.mp3', '6.mp3', '8.mp3', '7.mp3'], 
@@ -154,9 +189,19 @@
             sfxAudio.play().catch(e => {}); 
             btn.style.display = 'none';
             flash.classList.add('flash-active');
+            
             setTimeout(() => { wizardBox.style.opacity = '1'; wandLight.style.opacity = '1'; }, 500);
             setTimeout(() => { dialogue.innerHTML = "開了燈，天上好像有什麼東西？"; dialogue.style.opacity = '1'; }, 2500);
-            setTimeout(() => { dialogue.innerHTML = "看來，要把星星點亮才知道這是什麼？"; spawnNextStar(); }, 5500);
+            setTimeout(() => { 
+                dialogue.innerHTML = "看來，要把星星點亮才知道這是什麼？"; 
+                setTimeout(() => {
+                    projectile.style.opacity = '1';
+                    projectile.style.bottom = 'auto';
+                    projectile.style.top = stages[0][0].top;
+                    projectile.style.left = stages[0][0].left;
+                    setTimeout(() => { projectile.style.opacity = '0'; spawnNextStar(); }, 1000);
+                }, 1000);
+            }, 5500);
         });
 
         function playHandpanNote(stageIdx, starIdx) {
@@ -166,22 +211,114 @@
             }
         }
 
-        // 大結局音樂：手碟自動演奏 + 0.08 音量的 BGM 襯底
+        // ✨ 延遲 BGM 與 10秒手碟獨奏
         function playFinalMelody() {
-            bgmAudio.play().catch(e=>{});
+            // 10 秒空靈手碟獨奏
             const autoMelody = [
-                { note: 'D.mp3', delay: 0 }, { note: '3.mp3', delay: 600 },
-                { note: '5.mp3', delay: 1200 }, { note: '7.mp3', delay: 1800 },
-                { note: '9.mp3', delay: 2400 }, { note: '8.mp3', delay: 3200 },
-                { note: '6.mp3', delay: 4000 }, { note: 'D.mp3', delay: 5000 }, { note: '9.mp3', delay: 5000 }
+                { note: 'D.mp3', delay: 0 }, { note: '3.mp3', delay: 1200 },
+                { note: '5.mp3', delay: 2400 }, { note: '7.mp3', delay: 3600 },
+                { note: '6.mp3', delay: 4200 }, { note: '9.mp3', delay: 5500 },
+                { note: '8.mp3', delay: 7000 }, { note: '6.mp3', delay: 8500 },
+                { note: 'D.mp3', delay: 10000 }, { note: '9.mp3', delay: 10000 } // 大結尾共鳴
             ];
+            
             autoMelody.forEach(item => {
                 setTimeout(() => {
                     let audio = new Audio(item.note);
                     audio.play().catch(e=>{});
                 }, item.delay);
             });
+
+            // 在第 10.5 秒時，BGM 才緩緩加入
+            setTimeout(() => {
+                bgmAudio.volume = 0;
+                bgmAudio.play().catch(e=>{});
+                let vol = 0;
+                let fadeInterval = setInterval(() => {
+                    if(vol < 0.05) { // 限制在 0.05，確保不蓋過語音
+                        vol += 0.005;
+                        bgmAudio.volume = Math.min(vol, 0.05);
+                    } else {
+                        clearInterval(fadeInterval);
+                    }
+                }, 250);
+            }, 10500);
         }
+
+        // ✨ 階梯式雙語劇情播放
+        function startWishSequence() {
+            dialogue.style.opacity = '0'; 
+            
+            setTimeout(() => {
+                dialogue.innerHTML = "沒想到你居然找到小象神<span class='en-text'>(I can't believe you actually found the Little Elephant Spirit!)</span>";
+                dialogue.style.opacity = '1';
+                gv1.play().catch(e=>{});
+                
+                setTimeout(() => {
+                    dialogue.style.opacity = '0';
+                    setTimeout(() => {
+                        dialogue.innerHTML = "這樣吧<span class='en-text'>(Tell you what,)</span>";
+                        dialogue.style.opacity = '1';
+                        gv2.play().catch(e=>{});
+
+                        setTimeout(() => {
+                            dialogue.style.opacity = '0';
+                            setTimeout(() => {
+                                dialogue.innerHTML = "我給你的一個許願的機會<span class='en-text'>(I will grant you a chance to make a wish.)</span>";
+                                dialogue.style.opacity = '1';
+                                gv3.play().catch(e=>{});
+
+                                setTimeout(() => {
+                                    dialogue.style.opacity = '0';
+                                    setTimeout(() => {
+                                        dialogue.innerHTML = "你想要許願什麼呢？<span class='en-text'>(What would you like to wish for?)</span>";
+                                        dialogue.style.opacity = '1';
+                                        gv4.play().catch(e=>{});
+                                        
+                                        setTimeout(() => {
+                                            wishContainer.style.display = 'block';
+                                        }, 2500);
+                                    }, 600);
+                                }, 3500);
+                            }, 600);
+                        }, 2000);
+                    }, 600);
+                }, 4000);
+            }, 1000);
+        }
+
+        // 送出心願：播放最後三句祝福
+        document.getElementById('wish-submit').addEventListener('click', () => {
+            const inputVal = document.getElementById('wish-input').value;
+            if(!inputVal.trim()) return; 
+
+            wishContainer.style.display = 'none';
+            dialogue.style.opacity = '0';
+
+            setTimeout(() => {
+                dialogue.innerHTML = "小象神收到你的許願了！<span class='en-text gold'>(The Little Elephant Spirit has received your wish!)</span>";
+                dialogue.style.opacity = '1';
+                gv5.play().catch(e=>{});
+
+                setTimeout(() => {
+                    dialogue.style.opacity = '0';
+                    setTimeout(() => {
+                        dialogue.innerHTML = "願你所做的一切都有美好的結果<span class='en-text gold'>(May everything you do turn out great.)</span>";
+                        dialogue.style.opacity = '1';
+                        gv6.play().catch(e=>{});
+
+                        setTimeout(() => {
+                            dialogue.style.opacity = '0';
+                            setTimeout(() => {
+                                dialogue.innerHTML = "希望一切順利<span class='en-text gold'>(I hope everything goes smoothly.)</span>";
+                                dialogue.style.opacity = '1';
+                                gv7.play().catch(e=>{});
+                            }, 600);
+                        }, 3500);
+                    }, 600);
+                }, 3500);
+            }, 1000);
+        });
 
         function spawnNextStar() {
             let currentStageStars = stages[currentStageIndex];
@@ -202,8 +339,16 @@
                     setTimeout(() => { 
                         dialogue.innerHTML = "什麼？這個圖案是......？"; 
                         dialogue.style.opacity = '1';
-                        playFinalMelody();
+                        
+                        playFinalMelody(); 
                         finalElephant.style.opacity = '1'; 
+                        wizardBox.style.opacity = '0'; 
+                        
+                        // 等待 12.5 秒 (讓 10秒的手碟獨奏 + BGM 緩入完成後)，再開始語音劇情
+                        setTimeout(() => {
+                            startWishSequence();
+                        }, 12500);
+
                     }, 1500);
                 }
                 return; 
