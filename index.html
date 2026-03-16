@@ -52,9 +52,8 @@
             opacity: 0; transition: opacity 0.8s ease-in-out; z-index: 15; pointer-events: none;
         }
 
-        /* 中英雙語排版 */
-        .en-text { font-size: 14px; color: #aaaaaa; display: block; margin-top: 5px; }
-        .en-text.gold { color: #FFD700; opacity: 0.9; }
+        /* ✨ 英文統一變為金色設定 */
+        .en-text { font-size: 14px; color: #FFD700; display: block; margin-top: 5px; opacity: 0.9; }
 
         .star {
             position: absolute; width: 6px; height: 6px; background-color: #fff; border-radius: 50%;
@@ -79,12 +78,13 @@
         }
         @keyframes gentleFloat { 0% { margin-top: -40px; } 100% { margin-top: -55px; } }
 
+        /* ✨ 終極完美小象濾鏡：先變純黑再反轉純白，完全消滅紅色邊緣，只留下乾淨的金光 */
         #final-elephant {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background-image: url('elephant_line.png'); background-size: 100% 100%;
             background-position: center; background-repeat: no-repeat;
             opacity: 0; transition: opacity 3s ease-in-out; z-index: 2; pointer-events: none;
-            filter: invert(100%) drop-shadow(0 0 8px #FFD700) drop-shadow(0 0 15px #FFD700);
+            filter: brightness(0) invert(1) drop-shadow(0 0 8px #FFD700) drop-shadow(0 0 15px #FFD700);
         }
 
         #wish-container {
@@ -112,17 +112,17 @@
 <body>
     <div id="flash" class="flash-effect"></div>
 
-    <audio id="voice-audio" src="voice.mp3"></audio>
-    <audio id="sfx-audio" src="Soundeffects.mp3"></audio>
-    <audio id="bgm-audio" src="bgm.mp3" loop></audio>
+    <audio id="voice-audio" src="voice.mp3" preload="auto"></audio>
+    <audio id="sfx-audio" src="Soundeffects.mp3" preload="auto"></audio>
+    <audio id="bgm-audio" src="bgm.mp3" loop preload="auto"></audio>
 
-    <audio id="gv1" src="godvoice_01.mp3"></audio>
-    <audio id="gv2" src="godvoice_02.mp3"></audio>
-    <audio id="gv3" src="godvoice_03.mp3"></audio>
-    <audio id="gv4" src="godvoice_04.mp3"></audio>
-    <audio id="gv5" src="godvoice_05.mp3"></audio>
-    <audio id="gv6" src="godvoice_06.mp3"></audio>
-    <audio id="gv7" src="godvoice_07.mp3"></audio>
+    <audio id="gv1" src="godvoice_01.mp3" preload="auto"></audio>
+    <audio id="gv2" src="godvoice_02.mp3" preload="auto"></audio>
+    <audio id="gv3" src="godvoice_03.mp3" preload="auto"></audio>
+    <audio id="gv4" src="godvoice_04.mp3" preload="auto"></audio>
+    <audio id="gv5" src="godvoice_05.mp3" preload="auto"></audio>
+    <audio id="gv6" src="godvoice_06.mp3" preload="auto"></audio>
+    <audio id="gv7" src="godvoice_07.mp3" preload="auto"></audio>
 
     <div id="game-area">
         <button id="lumos-btn" class="lumos-btn">路摸思</button>
@@ -159,7 +159,6 @@
         const projectile = document.getElementById('magic-projectile');
         const wishContainer = document.getElementById('wish-container');
 
-        // 讀取配音檔
         const gv1 = document.getElementById('gv1');
         const gv2 = document.getElementById('gv2');
         const gv3 = document.getElementById('gv3');
@@ -168,6 +167,7 @@
         const gv6 = document.getElementById('gv6');
         const gv7 = document.getElementById('gv7');
 
+        // 正確的座標
         const stages = [
             [ { top: '50.3%', left: '42.7%' }, { top: '67.5%', left: '32.5%' }, { top: '55.1%', left: '48.0%' }, { top: '60.6%', left: '40.0%' }, { top: '63.2%', left: '46.9%' }, { top: '59.3%', left: '56.0%' } ],
             [ { top: '34.1%', left: '49.1%' }, { top: '40.1%', left: '59.5%' }, { top: '46.8%', left: '53.9%' }, { top: '48.3%', left: '74.9%' }, { top: '52.1%', left: '69.1%' }, { top: '62.1%', left: '60.3%' }, { top: '63.9%', left: '44.8%' }, { top: '69.2%', left: '46.1%' }, { top: '68.1%', left: '70.7%' } ],
@@ -185,8 +185,21 @@
         let totalStarsClicked = 0;
 
         btn.addEventListener('click', () => {
+            // ✨ 手機版解鎖器：用無聲的方式讓瀏覽器授權後續所有音檔自動播放
+            const allAudios = [bgmAudio, gv1, gv2, gv3, gv4, gv5, gv6, gv7];
+            allAudios.forEach(audio => {
+                audio.muted = true;
+                audio.play().then(() => {
+                    audio.pause();
+                    audio.currentTime = 0;
+                    audio.muted = false;
+                }).catch(() => {});
+            });
+
+            // 立即播放前奏音效
             voiceAudio.play().catch(e => {}); 
             sfxAudio.play().catch(e => {}); 
+            
             btn.style.display = 'none';
             flash.classList.add('flash-active');
             
@@ -211,15 +224,14 @@
             }
         }
 
-        // ✨ 延遲 BGM 與 10秒手碟獨奏
+        // 10秒手碟獨奏 + BGM 緩入 (最高音量 0.08)
         function playFinalMelody() {
-            // 10 秒空靈手碟獨奏
             const autoMelody = [
                 { note: 'D.mp3', delay: 0 }, { note: '3.mp3', delay: 1200 },
                 { note: '5.mp3', delay: 2400 }, { note: '7.mp3', delay: 3600 },
                 { note: '6.mp3', delay: 4200 }, { note: '9.mp3', delay: 5500 },
                 { note: '8.mp3', delay: 7000 }, { note: '6.mp3', delay: 8500 },
-                { note: 'D.mp3', delay: 10000 }, { note: '9.mp3', delay: 10000 } // 大結尾共鳴
+                { note: 'D.mp3', delay: 10000 }, { note: '9.mp3', delay: 10000 }
             ];
             
             autoMelody.forEach(item => {
@@ -229,15 +241,14 @@
                 }, item.delay);
             });
 
-            // 在第 10.5 秒時，BGM 才緩緩加入
             setTimeout(() => {
                 bgmAudio.volume = 0;
                 bgmAudio.play().catch(e=>{});
                 let vol = 0;
                 let fadeInterval = setInterval(() => {
-                    if(vol < 0.05) { // 限制在 0.05，確保不蓋過語音
+                    if(vol < 0.08) { // 音量精準鎖定在 0.08
                         vol += 0.005;
-                        bgmAudio.volume = Math.min(vol, 0.05);
+                        bgmAudio.volume = Math.min(vol, 0.08);
                     } else {
                         clearInterval(fadeInterval);
                     }
@@ -245,7 +256,7 @@
             }, 10500);
         }
 
-        // ✨ 階梯式雙語劇情播放
+        // 劇情推進
         function startWishSequence() {
             dialogue.style.opacity = '0'; 
             
@@ -287,7 +298,7 @@
             }, 1000);
         }
 
-        // 送出心願：播放最後三句祝福
+        // 許願按鈕
         document.getElementById('wish-submit').addEventListener('click', () => {
             const inputVal = document.getElementById('wish-input').value;
             if(!inputVal.trim()) return; 
@@ -296,21 +307,21 @@
             dialogue.style.opacity = '0';
 
             setTimeout(() => {
-                dialogue.innerHTML = "小象神收到你的許願了！<span class='en-text gold'>(The Little Elephant Spirit has received your wish!)</span>";
+                dialogue.innerHTML = "小象神收到你的許願了！<span class='en-text'>(The Little Elephant Spirit has received your wish!)</span>";
                 dialogue.style.opacity = '1';
                 gv5.play().catch(e=>{});
 
                 setTimeout(() => {
                     dialogue.style.opacity = '0';
                     setTimeout(() => {
-                        dialogue.innerHTML = "願你所做的一切都有美好的結果<span class='en-text gold'>(May everything you do turn out great.)</span>";
+                        dialogue.innerHTML = "願你所做的一切都有美好的結果<span class='en-text'>(May everything you do turn out great.)</span>";
                         dialogue.style.opacity = '1';
                         gv6.play().catch(e=>{});
 
                         setTimeout(() => {
                             dialogue.style.opacity = '0';
                             setTimeout(() => {
-                                dialogue.innerHTML = "希望一切順利<span class='en-text gold'>(I hope everything goes smoothly.)</span>";
+                                dialogue.innerHTML = "希望一切順利<span class='en-text'>(I hope everything goes smoothly.)</span>";
                                 dialogue.style.opacity = '1';
                                 gv7.play().catch(e=>{});
                             }, 600);
@@ -344,7 +355,6 @@
                         finalElephant.style.opacity = '1'; 
                         wizardBox.style.opacity = '0'; 
                         
-                        // 等待 12.5 秒 (讓 10秒的手碟獨奏 + BGM 緩入完成後)，再開始語音劇情
                         setTimeout(() => {
                             startWishSequence();
                         }, 12500);
