@@ -68,7 +68,6 @@
         }
         @keyframes gentleFloat { 0% { margin-top: -40px; } 100% { margin-top: -55px; } }
 
-        /* 🔥 強化版最終去背小象：強制亮度飆升，確保金光閃閃 */
         #final-elephant {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background-image: url('elephant_line.png'); background-size: 100% 100%;
@@ -106,8 +105,17 @@
         <div id="final-elephant"></div>
         
         <div id="tracing-paper"></div>
-        <div id="coord-dashboard" style="position: fixed; top: 0; left: 0; background: rgba(0,0,0,0.85); color: #00FF00; font-family: monospace; padding: 10px; z-index: 9999; pointer-events: none; width: 100vw; font-size: 12px; max-height: 40vh; overflow-y: auto; white-space: pre;">請依序點擊小象輪廓，共 22 點...
-(第 1~6 點為第一關，第 7~15 點為第二關，第 16~22 點為第三關)</div>
+        
+        <div id="click-counter" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.8); color: lime; padding: 10px 15px; border-radius: 20px; z-index: 9999; font-family: monospace; font-size: 14px; pointer-events: none; border: 1px solid lime;">
+            📍 已點擊: 0 / 22
+        </div>
+
+        <div id="copy-modal" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #222; padding: 20px; border-radius: 10px; z-index: 10000; width: 85%; text-align: center; box-shadow: 0 0 30px rgba(0,0,0,0.9); border: 2px solid lime;">
+            <h3 style="color: lime; margin-top: 0;">🎉 22 顆座標收集完成！</h3>
+            <textarea id="code-output" style="width: 90%; height: 120px; font-family: monospace; font-size: 12px; margin-bottom: 15px; background: #000; color: #fff; padding: 10px; border: 1px solid #555;" readonly></textarea>
+            <button id="copy-btn" style="padding: 12px; background: lime; color: black; border: none; font-weight: bold; border-radius: 5px; cursor: pointer; width: 100%; font-size: 16px;">📋 點我一鍵複製代碼</button>
+            <button id="reset-btn" style="padding: 12px; background: #555; color: white; border: none; font-weight: bold; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 10px; font-size: 16px;">🔄 點錯了，清空重來</button>
+        </div>
         </div>
 
     <script>
@@ -124,10 +132,9 @@
         const finalElephant = document.getElementById('final-elephant');
         const gameArea = document.getElementById('game-area');
 
-        // 🔥 調降 BGM 音量到 30%
-        bgmAudio.volume = 0.3;
+        bgmAudio.volume = 0.1; // 音量已調小
 
-        // ⚠️ 等一下用你產出的座標替換這裡！
+        // ⚠️ 等一下用你複製的座標替換這裡！
         const stages = [
             [ { top: '50.0%', left: '50.0%' } ], 
             [ { top: '40.0%', left: '40.0%' } ], 
@@ -147,24 +154,11 @@
         btn.addEventListener('click', () => {
             voiceAudio.play().catch(e => {}); 
             sfxAudio.play().catch(e => {}); 
-            
             btn.style.display = 'none';
             flash.classList.add('flash-active');
-
-            setTimeout(() => {
-                wizardBox.style.opacity = '1';
-                wandLight.style.opacity = '1';
-            }, 500);
-
-            setTimeout(() => {
-                dialogue.innerHTML = "開了燈，天上好像有什麼東西？";
-                dialogue.style.opacity = '1';
-            }, 2500);
-
-            setTimeout(() => {
-                dialogue.innerHTML = "看來，要把星星點亮才知道這是什麼？";
-                spawnNextStar(); 
-            }, 5500);
+            setTimeout(() => { wizardBox.style.opacity = '1'; wandLight.style.opacity = '1'; }, 500);
+            setTimeout(() => { dialogue.innerHTML = "開了燈，天上好像有什麼東西？"; dialogue.style.opacity = '1'; }, 2500);
+            setTimeout(() => { dialogue.innerHTML = "看來，要把星星點亮才知道這是什麼？"; spawnNextStar(); }, 5500);
         });
 
         function playHandpanNote(stageIdx, starIdx) {
@@ -192,12 +186,10 @@
 
         function spawnNextStar() {
             let currentStageStars = stages[currentStageIndex];
-
             if (currentStarIndex >= currentStageStars.length) {
                 currentStageIndex++;
                 currentStarIndex = 0;
                 arrow.style.display = 'none';
-
                 if (currentStageIndex === 1) {
                     dialogue.style.opacity = '0';
                     setTimeout(() => { dialogue.innerHTML = "那邊也有星星需要點亮。"; dialogue.style.opacity = '1'; spawnNextStar(); }, 1500);
@@ -210,12 +202,11 @@
                         dialogue.innerHTML = "什麼？這個圖案是......？"; 
                         dialogue.style.opacity = '1';
                         playFinalMelody();
-                        finalElephant.style.opacity = '1'; // 讓大象完全亮起
+                        finalElephant.style.opacity = '1'; 
                     }, 1500);
                 }
                 return; 
             }
-
             const starData = currentStageStars[currentStarIndex];
             const newStar = document.createElement('div');
             newStar.className = 'star guide-star';
@@ -227,9 +218,7 @@
                 arrow.style.display = 'block';
                 arrow.style.top = starData.top;
                 arrow.style.left = starData.left;
-            } else {
-                arrow.style.display = 'none';
-            }
+            } else { arrow.style.display = 'none'; }
 
             const stageToPlay = currentStageIndex;
             const starToPlay = currentStarIndex;
@@ -238,20 +227,24 @@
                 playHandpanNote(stageToPlay, starToPlay); 
                 this.classList.remove('guide-star');
                 this.classList.add('stage-cleared');
-                
-                currentStarIndex++;
-                totalStarsClicked++;
-                spawnNextStar();
+                currentStarIndex++; totalStarsClicked++; spawnNextStar();
             });
         }
 
-        // --- 全自動分關開發工具 ---
-        const dashboard = document.getElementById('coord-dashboard');
+        // --- 全新進化版：一鍵複製開發工具 ---
+        const clickCounter = document.getElementById('click-counter');
+        const copyModal = document.getElementById('copy-modal');
+        const codeOutput = document.getElementById('code-output');
+        const copyBtn = document.getElementById('copy-btn');
+        const resetBtn = document.getElementById('reset-btn');
         let allPoints = [];
-        
-        // 點擊事件只綁定在 gameArea 上，避免干擾
+        let redDots = []; // 用來紀錄畫在畫面上的紅點，方便重置時刪除
+
         gameArea.addEventListener('click', (e) => {
-            if(e.target.id === 'lumos-btn' || e.target.classList.contains('star') || e.target.id === 'coord-dashboard') return;
+            // 防呆：避開按鈕、星星，且點滿 22 顆就不再紀錄
+            if(e.target.id === 'lumos-btn' || e.target.classList.contains('star') || e.target.closest('#copy-modal')) return;
+            if(allPoints.length >= 22) return; 
+
             const rect = gameArea.getBoundingClientRect();
             let x = e.clientX - rect.left; let y = e.clientY - rect.top;
             if (x < 0 || x > rect.width || y < 0 || y > rect.height) return;
@@ -261,24 +254,48 @@
 
             allPoints.push(`{ top: '${yPercent}%', left: '${xPercent}%' }`);
             
+            // 畫紅點
             const dot = document.createElement('div');
             dot.style.position = 'absolute'; dot.style.top = yPercent + '%'; dot.style.left = xPercent + '%';
             dot.style.width = '8px'; dot.style.height = '8px'; dot.style.backgroundColor = 'red';
             dot.style.borderRadius = '50%'; dot.style.transform = 'translate(-50%, -50%)';
             dot.style.zIndex = '9998'; dot.style.pointerEvents = 'none';
             gameArea.appendChild(dot);
+            redDots.push(dot); // 存進陣列
 
-            let outputCode = "const stages = [\n";
-            outputCode += "    // 第一關 (6顆)\n    [\n        " + allPoints.slice(0, 6).join(", ") + "\n    ],\n";
-            if (allPoints.length > 6) {
+            // 更新右上角計數
+            clickCounter.innerText = `📍 已點擊: ${allPoints.length} / 22`;
+
+            // 當點滿 22 顆，自動彈出複製視窗
+            if (allPoints.length === 22) {
+                let outputCode = "const stages = [\n";
+                outputCode += "    // 第一關 (6顆)\n    [\n        " + allPoints.slice(0, 6).join(", ") + "\n    ],\n";
                 outputCode += "    // 第二關 (9顆)\n    [\n        " + allPoints.slice(6, 15).join(", ") + "\n    ],\n";
-            }
-            if (allPoints.length > 15) {
                 outputCode += "    // 第三關 (7顆)\n    [\n        " + allPoints.slice(15, 22).join(", ") + "\n    ]\n";
-            }
-            outputCode += "];";
+                outputCode += "];";
 
-            dashboard.innerText = `目前已點擊: ${allPoints.length}/22 顆\n\n` + outputCode;
+                codeOutput.value = outputCode;
+                copyModal.style.display = 'block';
+            }
+        });
+
+        // 一鍵複製按鈕邏輯
+        copyBtn.addEventListener('click', () => {
+            codeOutput.select();
+            document.execCommand('copy');
+            copyBtn.innerText = "✅ 複製成功！請傳到電腦貼上";
+            copyBtn.style.background = "yellow";
+        });
+
+        // 重新測量按鈕邏輯
+        resetBtn.addEventListener('click', () => {
+            allPoints = [];
+            redDots.forEach(dot => dot.remove()); // 刪除畫面上所有紅點
+            redDots = [];
+            clickCounter.innerText = `📍 已點擊: 0 / 22`;
+            copyModal.style.display = 'none';
+            copyBtn.innerText = "📋 點我一鍵複製代碼";
+            copyBtn.style.background = "lime";
         });
     </script>
 </body>
