@@ -7,7 +7,7 @@
     <style>
         body { margin: 0; height: 100vh; background-color: #030303; overflow: hidden; font-family: sans-serif; color: white; }
 
-        /* ✨ 震撼的 Lumos 全螢幕閃光 ✨ */
+        /* 閃光層 */
         .flash-effect {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background-color: white; z-index: 9999;
@@ -21,7 +21,7 @@
         }
 
         /* 魔法師與魔杖 */
-        .wizard-container { position: absolute; bottom: 2vh; left: -5vw; width: 55vw; max-width: 250px; z-index: 10; opacity: 0; transition: opacity 2s ease-in-out; }
+        .wizard-container { position: absolute; bottom: 2vh; left: -5vw; width: 55vw; max-width: 250px; z-index: 10; opacity: 0; transition: opacity 2s ease-in-out; pointer-events: none; }
         .wizard-img { width: 100%; height: auto; display: block; }
         .lumos-light {
             position: absolute; top: 18%; right: 6%; width: 12px; height: 12px;
@@ -43,19 +43,21 @@
             animation: btnFloat 2s infinite alternate; transition: all 0.5s; z-index: 20;
         }
 
-        /* 對話框 */
+        /* 對話框 (加上 pointer-events: none 讓點擊可以穿透！) */
         .dialogue-box {
             position: absolute; bottom: 25%; left: 50%; transform: translateX(-50%);
             width: 80%; max-width: 400px; padding: 15px 20px;
             background: rgba(25, 25, 40, 0.85); border: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: 10px; font-size: 18px; line-height: 1.5; text-align: center;
             opacity: 0; transition: opacity 1s ease-in; z-index: 15; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            pointer-events: none; /* 🔥 關鍵修正：解決隱形盾牌擋住星星的問題 */
         }
 
-        /* 十字星星 */
+        /* 十字星星 (拉高 z-index 確保永遠在最上層) */
         .star {
             position: absolute; width: 6px; height: 6px; background-color: #fff; border-radius: 50%;
             box-shadow: 0 0 10px 2px #fff; cursor: pointer; transform: translate(-50%, -50%); 
+            z-index: 50; /* 🔥 關鍵修正：確保星星永遠在可點擊的最上層 */
         }
         .star::before, .star::after {
             content: ''; position: absolute; background: rgba(255, 255, 255, 0.8);
@@ -63,8 +65,8 @@
         }
         .star::before { width: 24px; height: 1.5px; } .star::after { width: 1.5px; height: 24px; }  
 
-        .guide-star { animation: guidePulse 1s infinite alternate; z-index: 5; }
-        @keyframes guidePulse { 0% { opacity: 0.5; } 100% { opacity: 1; box-shadow: 0 0 20px 5px #fff; } }
+        .guide-star { animation: guidePulse 1s infinite alternate; }
+        @keyframes guidePulse { 0% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 1; transform: translate(-50%, -50%) scale(1.5); box-shadow: 0 0 20px 5px #fff; } }
         
         .stage-cleared { animation: rainbowFlash 3s infinite alternate; pointer-events: none; }
         @keyframes rainbowFlash {
@@ -73,15 +75,16 @@
             100% { background-color: #FFD700; box-shadow: 0 0 15px #FFD700; } 
         }
 
-        /* 指引手勢 */
+        /* 指引手勢 (加上 pointer-events: none 讓點擊可以穿透！) */
         #guide-arrow {
             position: absolute; font-size: 32px; display: none; 
-            animation: gentleFloat 1.5s infinite alternate ease-in-out; z-index: 6; transform: translateX(-50%);
+            animation: gentleFloat 1.5s infinite alternate ease-in-out; z-index: 60; transform: translateX(-50%);
             filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8));
+            pointer-events: none; /* 🔥 關鍵修正：手勢本身不能擋住星星 */
         }
         @keyframes gentleFloat { 0% { margin-top: -40px; } 100% { margin-top: -55px; } }
 
-        /* 隱藏的最終小象連線圖 */
+        /* 最終浮現圖 */
         #final-elephant {
             position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
             background-image: url('elephant.jpg'); background-size: contain; background-position: center; background-repeat: no-repeat;
@@ -95,7 +98,6 @@
 
     <audio id="voice-audio" src="voice.mp3"></audio>
     <audio id="sfx-audio" src="Soundeffects.mp3"></audio>
-    
     <audio id="bgm-audio" src="bgm.mp3" loop></audio>
 
     <button id="lumos-btn" class="lumos-btn">路摸思</button>
@@ -108,7 +110,6 @@
     </div>
 
     <div id="stars-container"></div>
-    
     <div id="final-elephant"></div>
 
     <script>
@@ -124,15 +125,12 @@
         const starsContainer = document.getElementById('stars-container');
         const finalElephant = document.getElementById('final-elephant');
 
-        // --- 星空座標資料 ---
         const stages = [
-            // 第一關：土丘與基座 (6顆)
             [
                 { top: '50.3%', left: '48.0%' }, { top: '67.2%', left: '45.1%' },
                 { top: '54.9%', left: '49.4%' }, { top: '60.4%', left: '47.1%' },
                 { top: '62.9%', left: '48.6%' }, { top: '58.9%', left: '51.8%' }
             ],
-            // 第二關：背部與頭部 (9顆)
             [
                 { top: '39.8%', left: '52.7%' }, { top: '46.4%', left: '51.3%' },
                 { top: '47.8%', left: '56.8%' }, { top: '34.4%', left: '49.7%' },
@@ -140,7 +138,6 @@
                 { top: '69.1%', left: '49.1%' }, { top: '64.0%', left: '48.5%' },
                 { top: '62.3%', left: '52.8%' }
             ],
-            // 第三關：象鼻與愛心 (7顆)
             [
                 { top: '30.0%', left: '43.5%' }, { top: '36.1%', left: '43.3%' },
                 { top: '42.2%', left: '43.9%' }, { top: '41.3%', left: '45.7%' },
@@ -149,36 +146,28 @@
             ]
         ];
 
-        // --- 手碟音效清單 (對應每一關星星的順序) ---
         const handpanNotes = [
-            // 第一關旋律 (6音)
             ['1.mp3', '2.mp3', '3.mp3', '1.mp3', '4.mp3', '2.mp3'],
-            // 第二關旋律 (9音)
             ['3.mp3', '5.mp3', '4.mp3', '6.mp3', '5.mp3', '7.mp3', '6.mp3', '8.mp3', '7.mp3'],
-            // 第三關旋律 (7音) - 最後一顆星同時播放 D.mp3 和 9.mp3 形成重擊和弦
             ['7.mp3', '9.mp3', '8.mp3', '9.mp3', '6.mp3', '8.mp3', ['D.mp3', '9.mp3']]
         ];
 
         let currentStageIndex = 0;
         let currentStarIndex = 0;
+        let totalStarsClicked = 0; // 新增：紀錄玩家總共點了幾顆星星
 
-        // 點擊路摸思
         btn.addEventListener('click', () => {
             voiceAudio.play().catch(e => {}); 
             sfxAudio.play().catch(e => {}); 
             
             btn.style.display = 'none';
-
-            // 1. 觸發強烈白光爆閃
             flash.classList.add('flash-active');
 
-            // 2. 魔法師與魔杖在白光消退時浮現
             setTimeout(() => {
                 wizardBox.style.opacity = '1';
                 wandLight.style.opacity = '1';
             }, 500);
 
-            // 3. 推進劇情
             setTimeout(() => {
                 dialogue.innerHTML = "開了燈，天上好像有什麼東西？";
                 dialogue.style.opacity = '1';
@@ -190,32 +179,27 @@
             }, 5500);
         });
 
-        // 播放特定手碟音效
         function playHandpanNote(stageIdx, starIdx) {
             const noteData = handpanNotes[stageIdx][starIdx];
-            
-            // 如果是陣列（代表最後一顆愛心的和弦）就同時播放多個檔案
             if (Array.isArray(noteData)) {
                 noteData.forEach(file => {
                     let audio = new Audio(file);
-                    audio.play().catch(e => console.log("音檔播放被阻擋或遺失: " + file));
+                    audio.play().catch(e => {});
                 });
             } else {
                 let audio = new Audio(noteData);
-                audio.play().catch(e => console.log("音檔播放被阻擋或遺失: " + noteData));
+                audio.play().catch(e => {});
             }
         }
 
         function spawnNextStar() {
             let currentStageStars = stages[currentStageIndex];
 
-            // 檢查是否這個關卡的星星都點完了
             if (currentStarIndex >= currentStageStars.length) {
                 currentStageIndex++;
                 currentStarIndex = 0;
                 arrow.style.display = 'none';
 
-                // 判斷要進入下一關，還是大結局
                 if (currentStageIndex === 1) {
                     dialogue.style.opacity = '0';
                     setTimeout(() => { dialogue.innerHTML = "那邊也有星星需要點亮。"; dialogue.style.opacity = '1'; spawnNextStar(); }, 1500);
@@ -223,14 +207,11 @@
                     dialogue.style.opacity = '0';
                     setTimeout(() => { dialogue.innerHTML = "剩下幾顆星星了"; dialogue.style.opacity = '1'; spawnNextStar(); }, 1500);
                 } else {
-                    // 大結局！
                     dialogue.style.opacity = '0';
                     setTimeout(() => { 
                         dialogue.innerHTML = "什麼？這個圖案是......？"; 
                         dialogue.style.opacity = '1';
-                        // 播放背景音樂
                         bgmAudio.play().catch(e=>{});
-                        // 浮現完整小象圖案
                         finalElephant.style.opacity = '0.8';
                     }, 1500);
                 }
@@ -244,20 +225,25 @@
             newStar.style.left = starData.left;
             starsContainer.appendChild(newStar);
 
-            arrow.style.display = 'block';
-            arrow.style.top = starData.top;
-            arrow.style.left = starData.left;
+            // 🔥 新增邏輯：只在總點擊數小於 3（也就是前 3 顆星星）時顯示手指引導
+            if (totalStarsClicked < 3) {
+                arrow.style.display = 'block';
+                arrow.style.top = starData.top;
+                arrow.style.left = starData.left;
+            } else {
+                arrow.style.display = 'none';
+            }
 
-            // 把關卡與星星索引先存起來給點擊事件使用
             const stageToPlay = currentStageIndex;
             const starToPlay = currentStarIndex;
 
             newStar.addEventListener('click', function() {
-                playHandpanNote(stageToPlay, starToPlay); // 播放音效
+                playHandpanNote(stageToPlay, starToPlay); 
                 this.classList.remove('guide-star');
                 this.classList.add('stage-cleared');
                 
                 currentStarIndex++;
+                totalStarsClicked++; // 增加總點擊數
                 spawnNextStar();
             });
         }
